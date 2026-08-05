@@ -1,7 +1,7 @@
 ---
 name: table
-argument-hint: "[permit|coverage|area|volume|basement|rooftop|landuse|a11y|site|green|list]"
-description: BIMTeki「製作檢討表格」的單一入口與總調度（hub）。凡是要做建照圖說裡的任何一張檢討表都從這裡進來——面積總表、各層容積、地下層容積、屋突、建照審查、土管、無障礙、基地概要、建蔽率、綠化。當使用者想要「製作檢討表格 / 產生檢討表 / 做面積表 / 做容積檢討 / 做建照審查表 / 做土管表 / 做無障礙檢討 / 做建蔽率檢討 / 做綠化檢討 / 做基地概要 / 做屋突檢討 / 這個建照有哪些檢討表可以做 / make review tables」時務必使用本 skill，即使沒有明講「skill」二字。可帶關鍵字直接指定要哪張表，例如 `/bimteki:table permit`（建照審查表）、`coverage`（建蔽率）、`area`（面積總表）——完整對照見下方「參數對照」。本 skill 不直接建表、不畫圖、不查法規，只負責確認連線與案型、判斷該表能否自動化、路由到各表專屬 skill；實際建表一律交給專屬 skill。逐段面積計算式表與純圖類不在範圍內。
+argument-hint: "[審查|建蔽|面積總表|容積|地下|屋突|土管|無障礙|基地|綠化|清單]"
+description: BIMTeki「製作檢討表格」的單一入口與總調度（hub）。凡是要做建照圖說裡的任何一張檢討表都從這裡進來——面積總表、各層容積、地下層容積、屋突、建照審查、土管、無障礙、基地概要、建蔽率、綠化。當使用者想要「製作檢討表格 / 產生檢討表 / 做面積表 / 做容積檢討 / 做建照審查表 / 做土管表 / 做無障礙檢討 / 做建蔽率檢討 / 做綠化檢討 / 做基地概要 / 做屋突檢討 / 這個建照有哪些檢討表可以做 / make review tables」時務必使用本 skill，即使沒有明講「skill」二字。可帶關鍵字直接指定要哪張表，例如 `/bimteki:table 審查`（建照審查表）、`建蔽`、`面積總表`；英文 `permit`／`coverage`／`area` 等同樣接受——完整對照見下方「參數對照」。本 skill 不直接建表、不畫圖、不查法規，只負責確認連線與案型、判斷該表能否自動化、路由到各表專屬 skill；實際建表一律交給專屬 skill。逐段面積計算式表與純圖類不在範圍內。
 ---
 
 # BIMTeki 製作檢討表格（總調度 hub）
@@ -21,22 +21,25 @@ description: BIMTeki「製作檢討表格」的單一入口與總調度（hub）
 
 ## 參數對照（`/bimteki:table <關鍵字>`）
 
-帶參數時直接對到下表的 skill，跳過詢問。關鍵字大小寫不拘，中文表名／簡稱同樣有效。
+帶參數時直接對到下表的 skill，跳過詢問。**第一欄就是 `argument-hint` 顯示給使用者看的字**，
+第二欄是同樣接受的寫法（英文關鍵字大小寫不拘）。
 
-| 關鍵字 | 中文／別名 | 檢討表 | 交給 |
+| 關鍵字 | 也接受 | 檢討表 | 交給 |
 |---|---|---|---|
-| `area` | 面積總表、樓地板面積 | 各層樓地板面積總表 | `bimteki-area-summary-table` |
-| `volume` | 容積、各層容積 | 各層容積檢討表（每地上層一張） | `bimteki-per-floor-volume-review-table` |
-| `basement` | 地下層、地下室 | 地下層容積檢討表 | `bimteki-basement-volume-review-table` |
-| `rooftop` | 屋突 | 屋突面積檢討表 | `bimteki-rooftop-area-review-table` |
-| `permit` | 建照審查、審查表 | 建照審查表第18~27項 | `bimteki-permit-review-table` |
-| `landuse` | 土管、土地使用分區 | 土管檢討表 | `bimteki-landuse-review-table` |
-| `a11y` | 無障礙 | 無障礙建築檢討表 | `bimteki-accessibility-review-table` |
-| `site` | 基地概要、基地資訊 | 基地概要表 | `bimteki-site-overview-table` |
-| `coverage` | 建蔽率、建築面積檢討 | 建蔽率檢討表 | `bimteki-coverage-review-table` |
-| `green` | 綠化、綠覆 | 綠化面積檢討表 | `bimteki-green-area-review-table` |
+| `審查` | `permit`、建照審查、審查表 | 建照審查表第18~27項 | `bimteki-permit-review-table` |
+| `建蔽` | `coverage`、建蔽率、建築面積檢討 | 建蔽率檢討表 | `bimteki-coverage-review-table` |
+| `面積總表` | `area`、面積、樓地板面積、各層樓地板面積 | 各層樓地板面積總表 | `bimteki-area-summary-table` |
+| `容積` | `volume`、各層容積、地上層容積 | 各層容積檢討表（每地上層一張） | `bimteki-per-floor-volume-review-table` |
+| `地下` | `basement`、地下層、地下室 | 地下層容積檢討表 | `bimteki-basement-volume-review-table` |
+| `屋突` | `rooftop` | 屋突面積檢討表 | `bimteki-rooftop-area-review-table` |
+| `土管` | `landuse`、土地使用分區 | 土管檢討表 | `bimteki-landuse-review-table` |
+| `無障礙` | `a11y`、無障礙建築 | 無障礙建築檢討表 | `bimteki-accessibility-review-table` |
+| `基地` | `site`、基地概要、基地資訊 | 基地概要表 | `bimteki-site-overview-table` |
+| `綠化` | `green`、綠覆、綠化面積 | 綠化面積檢討表 | `bimteki-green-area-review-table` |
+| `清單` | `list` | 只列出本案可做的表，不建表 | （本 skill 自己回答） |
 
-`list` / `清單`＝只列出本案可做的檢討表，不建表。參數比對不到任何一列時，不要猜——列出上表請使用者指定。
+注意「`容積`」是**地上層**的各層容積檢討，地下層要用「`地下`」——兩者是不同的表，別混。
+參數比對不到任何一列時，不要猜——列出上表請使用者指定。
 
 ## 分類與路由（以 references/table-catalog.md 為準）
 
