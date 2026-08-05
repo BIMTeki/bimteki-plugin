@@ -1,6 +1,6 @@
 ---
 name: bimteki-rooftop-area-review-table
-description: 在 BIMTeki 專案中生成「屋突面積檢討」表格（TableTemplate 表格樣板，俗稱屋突X層面積檢討）。當使用者想要「做屋突面積檢討表 / 建立屋突檢討 / 產生屋突面積表 / 幫這案做屋突檢討表格 / rooftop area review table / penthouse area review table」時務必使用本 skill，即使沒有明講「skill」二字。表格為兩欄式、固定四列：標題（樓層名稱[＋棟別]＋面積檢討）、屋突面積、允建屋突面積、檢討。三個值欄全部用「樓層屬性（story 相依）」自動文字綁定、由 BIMTeki 依樓層即時計算，不寫死數字：屋突面積用 storyArea「算式：室內樓地板面積」（或「算式：屋突」）；允建屋突面積用 roofArea「算式：屋突允建面積」；檢討用 roofArea「算式：屋突檢討式」（皆為通用 story 相依 token，依放置樓層與其棟別自動解析）。因三者都 story 相依，單棟／多棟分棟／各棟總計所有情形共用同一份自動文字與格式，故只需做「單一 story-open 樣板」：建立後把樣板層級設 table_type=story、story_guid 清空（樓層打開），放置時使用者自選樓層；多棟分棟檢討時標題加「棟別」自動文字。也可選擇每棟每屋突層各綁該層 story 各建一張。用 scripts/build_rooftop_table.py 產生 cells/merges，create_project_table_template 建表、modify_project_table_template 補合併/欄寬/樣板層級樓層屬性，最後讀回驗證。本 skill 只負責「屋突面積檢討表」；各層容積檢討表、各層樓地板面積總表、基地概要、建照審查、土管、無障礙、容積區域繪製另有各自的 skill，不要用本 skill 處理。
+description: 在 BIMTeki 專案中生成「屋突面積檢討」表格（TableTemplate 表格樣板，俗稱屋突X層面積檢討，建照圖說 A0-12~14）。當使用者說「做屋突面積檢討表 / 建立屋突檢討 / 產生屋突面積表 / rooftop area review table」，或由 `table` skill 帶 `rooftop` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。兩欄式固定四列（標題／屋突面積／允建屋突面積／檢討），三個值欄全用 story 相依 autotext，故各案型共用一份「單一 story-open 樣板」、放置時自選樓層。token 對應、樣板層級設定與腳本用法見本文。各層容積檢討表另有專屬 skill，不要用本 skill 代替。
 ---
 
 # BIMTeki 屋突面積檢討表生成

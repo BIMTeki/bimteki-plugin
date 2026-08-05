@@ -1,6 +1,6 @@
 ---
 name: bimteki-green-area-review-table
-description: 在 BIMTeki 專案中生成「綠化面積檢討」表格（TableTemplate 表格樣板，俗稱綠化檢討表／綠覆檢討，常見於建照圖說 A0-05）。當使用者想要「做綠化面積檢討表 / 建立綠化檢討 / 產生綠化面積表 / 綠化率檢討 / 喬木數量檢討 / green area review table / greening review table」時務必使用本 skill，即使沒有明講「skill」二字。**本表只有位於都市計畫內地區（有土管）或其他特殊檢討條例（如宜居辦法、綠建築）規定才須檢討；位於非都市計畫地區（非都市土地）則不需檢討，本 skill 會先做這個把關並在不需檢討時直接回報、不建表。** 綠化的規定值（應綠化比率、綠化困難認定、喬木每單位面積株數）**依本案的「土管」綠化部分規定而定，各土管略有差異，故建表前務必先閱讀此案的土管**。表格為兩欄式（項目／內容），依土管格式組出：1.標題、2.實設空地／法定空地（綠化基準面積）、3.綠化面積（設計/實設綠化面積）、4.綠化有困難面積、5.應綠化面積、6.喬木數量檢討。各列右欄值一律用 autotext（green 分類）綁定、由 BIMTeki 即時計算，不寫死數字；算式優先綁複合「算式：／計算式：」token（BIMTeki 已依專案綠化參數算好），找不到才用數值 token 自組。用 get_project_core_snapshot 判是否都計內、get_project_green_info 讀專案綠化參數與各項面積、get_project_autotext_catalog(green) 取 token、evaluate_autotext_values(category="green") 判綠化困難是否為 0，create_project_table_template 一步建表（含合併/欄寬/等寬），必要時 modify_project_table_template 修正，最後讀回驗證。本 skill 只負責「綠化面積檢討表」；各層樓地板面積總表、各層容積檢討、地下層容積檢討、基地概要、建照審查、土管逐條檢討表、無障礙、建蔽率、容積區域繪製另有各自的 skill，不要用本 skill 處理。
+description: 在 BIMTeki 專案中生成「綠化面積檢討」表格（TableTemplate 表格樣板，俗稱綠化檢討表／綠覆檢討，建照圖說 A0-05）。當使用者說「做綠化面積檢討表 / 建立綠化檢討 / 綠化率檢討 / 喬木數量檢討 / green area review table」，或由 `table` skill 帶 `green` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。**本表只有都市計畫內（有土管）或其他特殊條例才須檢討，非都市土地不需檢討——本 skill 會先把關，不需要時直接回報、不建表；規定值（應綠化比率、綠化困難認定、喬木株數）依本案土管而定，建表前務必先讀土管。** 兩欄式六段的列組成、token 選用與 MCP 呼叫順序見本文。建蔽率檢討表、土管逐條檢討表另有專屬 skill，不要用本 skill 代替。
 ---
 
 # BIMTeki 綠化面積檢討表生成

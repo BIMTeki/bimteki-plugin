@@ -10,7 +10,7 @@ BIMTeki Studio 的 Claude 技能包。安裝後，你可以直接用中文交代
 
 | 技能 | 用途 |
 |---|---|
-| `bimteki-review-tables` | **檢討表總調度**。不確定要做哪張表時，先叫這個 |
+| `table` | **檢討表單一入口**。`/bimteki:table <關鍵字>` 直接做指定的表（permit 建照審查／coverage 建蔽率／area 面積總表／volume 各層容積／basement 地下層／rooftop 屋突／landuse 土管／a11y 無障礙／site 基地概要／green 綠化）；不帶參數則列出本案可做的表讓你挑 |
 | `bimteki-area-summary-table` | 各層樓地板面積總表 |
 | `bimteki-per-floor-volume-review-table` | 各層容積檢討表（每個地上層一張） |
 | `bimteki-basement-volume-review-table` | 地下層容積檢討表 |

@@ -1,6 +1,6 @@
 ---
 name: bimteki-coverage-review-table
-description: 在 BIMTeki 專案中生成「建蔽率檢討」表格（表格標題為「建築面積檢討」，俗稱建蔽率檢討表／建築面積檢討表，常見於建照圖說 A0-03）。當使用者想要「做建蔽率檢討表 / 建立建築面積檢討 / 產生建蔽率檢討 / 建蔽率 vs 建築面積檢討 / coverage ratio review table / building coverage review table」時務必使用本 skill，即使沒有明講「skill」二字。左欄為項目標籤（加全形冒號、不加編號），右欄／各分區欄綁 autotext 由 BIMTeki 即時計算、不寫死。**先依 `get_project_core_snapshot` 的 `land.parcels` 數量分兩種版面**：單一使用分區→兩欄式（項目／值）；多個使用分區→陣列欄向版面（每分區一欄＋陣列自帶總計欄，因 BIMTeki 無 per-分區 scalar token，各分區值只能靠陣列 `LandParcel.Parcels`＋`fieldsOrientation:1` 展開）。列組成：基地面積、扣除項（保留地／道路退縮地／鄰房侵占／騎樓，面積>0 才顯示；騎樓地另需勾選「建蔽率計算時騎樓地從基地母數扣除」）、使用面積、法定建蔽率、（多分區另有允建建築面積）、設計建築面積、建蔽率檢討。用 get_project_autotext_catalog(siteOverview,coverage,arrayField)、evaluate_autotext_values(category="coverage,siteOverview")、get_project_core_snapshot 取值判斷，create_project_table_template 一步建表（含合併/框線/等寬）、必要時 modify_project_table_template 修正並讀回驗證。本 skill 只負責「建蔽率檢討表（建築面積檢討）」；各層樓地板面積總表、各層容積檢討、基地概要、建照審查、土管、無障礙、綠化面積、容積區域繪製另有各自的 skill，不要用本 skill 處理。
+description: 在 BIMTeki 專案中生成「建蔽率檢討」表格（表格標題為「建築面積檢討」，建照圖說 A0-03）。當使用者說「做建蔽率檢討表 / 建立建築面積檢討 / 產生建蔽率檢討 / coverage ratio review table」，或由 `table` skill 帶 `coverage` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。**先依 `get_project_core_snapshot` 的 `land.parcels` 數量分兩種版面**：單一使用分區→兩欄式；多分區→陣列欄向版面（每分區一欄，靠 `LandParcel.Parcels`＋`fieldsOrientation:1` 展開）。列組成、扣除項出現條件與 MCP 呼叫順序見本文，值一律綁 autotext。基地概要表、綠化檢討表另有專屬 skill，不要用本 skill 代替。
 ---
 
 # BIMTeki 建蔽率檢討表生成（表格標題「建築面積檢討」）

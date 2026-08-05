@@ -1,6 +1,6 @@
 ---
 name: bimteki-accessibility-review-table
-description: 在 BIMTeki 專案中生成「建築技術規則設計施工篇第十章 無障礙建築」檢討表（TableTemplate 表格樣板）。當使用者想要「做無障礙檢討表 / 無障礙建築檢討 / 產生無障礙設施檢討表 / 建築技術規則第十章檢討 / accessibility review table」時務必使用本 skill，即使沒有明講「skill」二字。表格為兩欄式：第一列為大標題，第二列起每列一條；左欄為固定的無障礙建築條文（第167條及第167-1～167-7條，逐字照抄），右欄為依本案填寫的檢討內容。右欄組法優先序：**能對應到自動文字者優先綁 autotext（如建築物用途/組別、汽車停車位數、應設無障礙停車位數），讓 BIMTeki 即時計算；無對應者填標準樣板句（依本案事實選「帶入實際值」或「本案未設…故不適用」）；外部引用一律留佔位符**。再用 create_project_table_template / modify_project_table_template 建表並讀回驗證。本 skill 只負責「無障礙建築檢討表」；土管檢討表、建照審查表、各層面積總表另有各自的 skill，不要用本 skill 處理。
+description: 在 BIMTeki 專案中生成「建築技術規則設計施工篇第十章 無障礙建築」檢討表（TableTemplate 表格樣板，建照圖說 A0-06）。當使用者說「做無障礙檢討表 / 無障礙建築檢討 / 產生無障礙設施檢討表 / accessibility review table」，或由 `table` skill 帶 `a11y` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。兩欄式，左欄為第167條及第167-1～167-7條逐字照抄，右欄依本案填寫：能綁 autotext 者優先綁、無對應者填標準樣板句、外部引用留佔位符。逐條內容與 MCP 呼叫順序見本文。建照審查表、土管檢討表另有專屬 skill，不要用本 skill 代替。
 ---
 
 # BIMTeki 無障礙建築檢討表生成

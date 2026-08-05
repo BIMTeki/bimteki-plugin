@@ -1,6 +1,6 @@
 ---
 name: bimteki-area-summary-table
-description: 在 BIMTeki 專案中生成「各層樓地板面積」面積總表（TableTemplate 表格樣板）。當使用者想要「生成面積總表 / 建立各層樓地板面積表 / 產生面積計算總表 / 做容積面積表格 / area summary table」時務必使用本 skill，即使使用者沒有明講「skill」二字。本 skill 會**先用 BIMTeki MCP 取得案型**（單棟／一般多棟／連棟透天多棟，共用梯廳／非共用梯廳只適用於單棟與一般多棟），再依案型組出對應欄位與樓層列：非共用梯廳會隱藏梯廳與回計相關欄；單棟填各樓層屬性、一般多棟填「各棟總計XX層」屬性、連棟透天固定填「各棟各自所有樓層＋各棟小計＋全案總計」並在最左側固定內建一欄「棟別」（垂直合併標示Ｘ棟，涵蓋該棟樓層與小計列）；並移除該專案數值為 0 的空間欄位。**本案有騎樓（騎樓樓地板面積>0）時，會在「地上一層」之前插入一列騎樓列（層別欄固定文字「騎樓」、樓地板面積欄綁騎樓 autotext 並把該格樓層屬性設為地上一層），且總計列的樓地板面積(A) 欄改綁「計算式：總樓地板面積」以含入騎樓。**使用 BIMTeki MCP 的表格樣板工具（get_project_core_snapshot 判案型，含 building.case_type 連棟透天旗標、get_project_autotext_catalog 取 token、evaluate_story_autotext_values 判 0 值欄、create_project_table_template、modify_project_table_template），涵蓋標題三列結構、動態欄位與合併、各樓層自動文字列、總計列、機電空間與地下層容積檢討列（依條件顯示：機電面積總計為 0 時省略機電列；採地下層總量檢討且地下層面積大於 0 才顯示地下層列）、最終容積樓地板面積列，以及同寬儲存格、粗體、縮減字寬、依中文換行等表現法設定。本 skill 只負責「面積總表的建立」；繪製容積區域、門窗檢討、法規查詢另有各自的 skill，不要用本 skill 處理。
+description: 在 BIMTeki 專案中生成「各層樓地板面積」面積總表（TableTemplate 表格樣板，建照圖說 A0-01）。當使用者說「生成面積總表 / 建立各層樓地板面積表 / 做容積面積表格 / area summary table」，或由 `table` skill 帶 `area` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。會先取案型（單棟／一般多棟／連棟透天）再組欄位與樓層列，值一律綁 autotext 由 BIMTeki 即時計算、不寫死；案型分支、騎樓列、0 值欄移除與 MCP 呼叫順序見本文。本 skill 只做面積總表；其他檢討表與容積區域繪製各有專屬 skill，不要用本 skill 代替。
 ---
 
 # BIMTeki 面積總表生成

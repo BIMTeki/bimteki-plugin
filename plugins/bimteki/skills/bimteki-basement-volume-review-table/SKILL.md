@@ -1,6 +1,6 @@
 ---
 name: bimteki-basement-volume-review-table
-description: 在 BIMTeki 專案中生成「地下層容積檢討」表格（地下層總計容積檢討表，俗稱地下層免計容積檢討／地下層停車空間容積檢討，常見於建照圖說 A0-11）。當使用者想要「做地下層容積檢討表 / 地下層總計容積檢討 / 地下室容積檢討表 / 地下層停車空間容積檢討 / 產生地下層免計容積檢討 / basement volume review table / underground FAR deduction table」時務必使用本 skill，即使沒有明講「skill」二字。全案只有一張表（不分棟）：上半用**一個陣列自動文字「地下層停車清單」(ParkingInfoStoryManager.ParkingInfoStories)**，放置到圖面時自動逐樓層展開（地下二層／地下一層／地上一層…），欄位可選「樓層／汽車位數／機車位數／樓地板面積／自行車位數／可扣容積計算式」；接著是小計列（綁地下層總計數量/面積 token）、檢討 divider、防空避難設備面積（綁面積：法定防空避難室面積）、可扣容積總計（綁算式：地下層可扣容積）、最終檢討（綁算式：地下室容積檢討式）。值一律用 autotext 綁定、由 BIMTeki 即時計算，不寫死數字；陣列展開的實際列與計算值需放置到 layout 才顯示。用 get_project_parking_info 讀地下層逐層停車明細與總計（陣列自動文字背後的資料，無法求值時的正解）、get_project_autotext_catalog(arrayField/volumeCheck/coverage) 取 token、scripts/build_basement_table.py 產生 cells/merges，create_project_table_template 一步建表（含合併/框線/等寬），modify_project_table_template 補樣板名與欄寬，最後讀回驗證。本 skill 只負責「地下層容積檢討表」；各層容積檢討（地上層）、屋突面積檢討、各層樓地板面積總表、基地概要、建照審查、土管、無障礙、容積區域繪製另有各自的 skill，不要用本 skill 處理。
+description: 在 BIMTeki 專案中生成「地下層容積檢討」表格（俗稱地下層免計容積檢討／地下層停車空間容積檢討，建照圖說 A0-11）。當使用者說「做地下層容積檢討表 / 地下室容積檢討表 / 地下層停車空間容積檢討 / basement volume review table」，或由 `table` skill 帶 `basement` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。全案只有一張表（不分棟），上半用陣列自動文字「地下層停車清單」放置時逐樓層展開，其後為小計、防空避難、可扣容積總計與最終檢討列，值一律綁 autotext。欄位組成、腳本與 MCP 呼叫順序見本文。地上層容積、屋突、面積總表另有專屬 skill，不要用本 skill 代替。
 ---
 
 # BIMTeki 地下層容積檢討表生成

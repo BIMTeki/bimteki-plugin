@@ -1,6 +1,6 @@
 ---
 name: bimteki-permit-review-table
-description: 在 BIMTeki 專案中生成「建造執照及雜項執照規定項目審查表」的通用查核項目表（俗稱建照審查表，涵蓋依建築法第三十四條第三項應由主管建築機關審查的第十八～二十七項共 10 條）。當使用者想要「生成建照審查表 / 建立建照審查查核表 / 做建照審查通用檢討表 / 產生建照規定項目審查表 / building permit review table」時務必使用本 skill，即使沒有明講「skill」二字。表格為兩欄式：第一列為大標題，第二列起每列一項；左欄為固定的法規檢討項目（第18~27項條文，逐字照抄），右欄為依本案填寫的檢討內容。本 skill 會先用 BIMTeki MCP 取得專案資訊（get_project_core_snapshot 等）與自動文字目錄（get_project_autotext_catalog），逐項組出右欄內容，優先序為：**能對應到自動文字者優先綁定 autotext（如使用分區、法定/設計建蔽率、法定/設計容積率、建築物用途、面前道路、基地尺寸），讓 BIMTeki 即時計算；無對應者填標準樣板句；外部文件引用（技師公會函號、都計函號、地方政府文號、核准日期、檢討圖圖號等 BIMTeki 無法得知的資訊）一律留明顯佔位符待人工填**。再用 create_project_table_template 一步建表（cells 與標題列跨欄 merges 一起送、每格明確給 charwidth），modify_project_table_template 補樣板名與欄寬，最後讀回驗證並回報待手填清單。本 skill 只負責「建照審查表（第18~27項查核項目）」；各層樓地板面積總表、容積區域繪製、門窗檢討、法規查詢另有各自的 skill，不要用本 skill 處理。
+description: 在 BIMTeki 專案中生成「建造執照及雜項執照規定項目審查表」的通用查核項目表（俗稱建照審查表，第十八～二十七項共 10 條，建照圖說 A0-01）。當使用者說「生成建照審查表 / 建立建照審查查核表 / 產生建照規定項目審查表 / building permit review table」，或由 `table` skill 帶 `permit` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。兩欄式，左欄為固定條文逐字照抄，右欄依本案填寫：能綁 autotext 者優先綁、無對應者填標準樣板句、外部文號日期一律留佔位符待人工填。逐項內容與 MCP 呼叫順序見本文。土管、無障礙、面積總表另有專屬 skill，不要用本 skill 代替。
 ---
 
 # BIMTeki 建照審查表生成

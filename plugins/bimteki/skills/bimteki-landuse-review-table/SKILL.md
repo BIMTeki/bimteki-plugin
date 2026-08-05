@@ -1,6 +1,6 @@
 ---
 name: bimteki-landuse-review-table
-description: 在 BIMTeki 專案中依使用者提供的「土地使用分區管制要點」（俗稱土管）生成「土管檢討表」（TableTemplate 表格樣板）。當使用者想要「製作土管表格 / 做土管檢討表 / 土管檢討 / 把這份土管做成檢討表 / 新增土管檢討表 / land use zoning control review table」並附上土管文件（PDF 或文字檔）時務必使用本 skill，即使沒有明講「skill」二字。表格結構：最上方為土管名稱標題列，第二列為都市計畫書名稱（含發布日期文號），第三列為細部計畫名稱，其後為三欄式逐條檢討列（條文號碼、條文內容、檢討）。本 skill 會先讀取使用者上傳的土管文件逐條萃取條文（政府 PDF 文字層常為亂碼，需以視覺方式讀頁面抄錄）；條文內容逐字照抄、單一款項超過 5 行才以「文略~」節略；土管中的圖以佔位註記留位置待使用者自行貼圖。「檢討」欄依 BIMTeki 專案資訊（get_project_core_snapshot、get_project_autotext_catalog）填寫，能綁自動文字者優先綁 autotext，無法從專案判斷者一律留空待人工填、絕不臆測。再用 create_project_table_template / modify_project_table_template 建表並讀回驗證。本 skill 只負責「土管檢討表」；建照審查表、各層樓地板面積總表、容積區域繪製、法規查詢另有各自的 skill，不要用本 skill 處理。
+description: 在 BIMTeki 專案中依使用者提供的「土地使用分區管制要點」（俗稱土管）生成「土管檢討表」（TableTemplate 表格樣板，建照圖說 A0-02）。當使用者說「製作土管表格 / 做土管檢討表 / 把這份土管做成檢討表 / land use zoning control review table」，或由 `table` skill 帶 `landuse` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。**需使用者提供土管文件（PDF 或文字檔），沒附就先請他提供再開工。** 三欄式逐條檢討（條文號碼／條文內容／檢討），條文逐字照抄，檢討欄能綁 autotext 者優先綁、無法從專案判斷者留空待人工填、絕不臆測。萃取要領與版面見本文。建照審查表另有專屬 skill，不要用本 skill 代替。
 ---
 
 # BIMTeki 土管檢討表生成
