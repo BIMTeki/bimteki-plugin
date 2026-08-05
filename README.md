@@ -31,34 +31,20 @@ BIMTeki Studio 的 Claude 技能包。安裝後，你可以直接用中文交代
 ## 安裝前請先確認
 
 1. **Claude 付費方案**（Pro、Max、Team 或 Enterprise）。免費方案無法安裝外掛。
-2. **Archicad 已安裝 BIMTeki Studio 外掛**，且授權正常。
-3. **BIMTeki MCP 已安裝**（見下方步驟一）。
-4. 使用時 **Archicad 要開著、且已開啟要檢討的專案**。
+2. **已執行 BIMTeki Studio 安裝檔**（見下方步驟一），且授權正常。
+3. 使用時 **Archicad 要開著、且已開啟要檢討的專案**。
+4. 目前僅支援 **Windows**。
 
 ---
 
-## 步驟一：安裝 BIMTeki MCP
+## 步驟一：執行 BIMTeki Studio 安裝檔
 
-技能本身只是「作業指示」，實際去讀寫 Archicad 的是 BIMTeki MCP。沒有它，所有技能都無法運作。
+技能本身只是「作業指示」，實際去讀寫 Archicad 的是 BIMTeki Studio 外掛與它的 Claude 連接器。
 
-### Claude 桌機版 / Cowork
+安裝時請確認 **「Claude AI 連接器 (BIMTeki MCP)」** 這個項目是勾選的（預設就會勾）。它會把
+連接器裝到 `C:\Program Files\BIMTeki Studio\mcp\`，**連 Python 都自帶**，你不需要另外安裝任何東西。
 
-1. 向 BIMTeki 索取 `bimteki-mcp.mcpb`
-2. 打開 Claude Desktop → **設定 (Settings)** → **擴充功能 (Extensions)**
-3. 把 `bimteki-mcp.mcpb` 拖進去，或選「從檔案安裝」
-4. 安裝完成後，確認該擴充功能為「已啟用」
-
-### Claude Code CLI
-
-1. 向 BIMTeki 索取 `bimteki-mcp.mcpb`（它其實是一個 zip）
-2. 解壓縮到一個固定位置，建議 `C:\BIMTeki\mcp`
-3. 在終端機執行（路徑請改成你實際解壓的位置）：
-
-```powershell
-claude mcp add bimteki --scope user -e PYTHONUTF8=1 -e "PYTHONPATH=C:\BIMTeki\mcp;C:\BIMTeki\mcp\lib" -- python "C:\BIMTeki\mcp\server\main.py"
-```
-
-4. 用 `claude mcp list` 確認 `bimteki` 出現且狀態正常
+> 已經裝過舊版 BIMTeki Studio 的人，請重新執行一次最新版安裝檔，才會有這個連接器。
 
 ---
 
@@ -95,6 +81,12 @@ https://github.com/GOLLd765/bimteki-plugin
 5. 在出現的清單中找到 **BIMTeki 建照檢討**，按 **Install**
 
 安裝完成後，在對話框輸入 `/` 或按 `+`，就會看到所有 BIMTeki 技能。
+
+> **不需要設定 MCP。** 技能包裡已經帶了連接器設定，會自動找到步驟一裝好的 BIMTeki MCP，
+> 你不必執行 `claude mcp add`，也不必安裝任何擴充功能。
+>
+> 若 Cowork 沒有自動連上，請改用 BIMTeki 提供的 `bimteki-mcp.mcpb`：Claude Desktop →
+> 設定 → 擴充功能 → 安裝該檔案。
 
 ---
 
@@ -143,7 +135,8 @@ https://github.com/GOLLd765/bimteki-plugin
 |---|---|
 | 技能沒出現在清單裡 | 執行 `/reload-plugins`；仍無效就重開 Claude |
 | `/plugin` 指令不存在 | Claude Code 版本太舊，請更新到最新版 |
-| Claude 說「找不到 BIMTeki 工具」 | MCP 沒裝或沒啟用，回到步驟一 |
+| Claude 說「找不到 BIMTeki 工具」 | 連接器沒裝到。重跑 BIMTeki Studio 安裝檔，確認勾選「Claude AI 連接器」 |
+| `/plugin` 的 Errors 分頁顯示連接器啟動失敗 | 確認 `C:\Program Files\BIMTeki Studio\mcp\python\python.exe` 存在；不存在就是安裝時沒勾選該元件 |
 | Claude 說「無法連線到 Archicad」 | 確認 Archicad 開著、專案已開啟、BIMTeki 外掛已載入 |
 | 表格產生了但數值是空白 | 自動文字要放置到圖紙（Layout）上才會計算出實際值 |
 | 授權相關錯誤 | 請聯繫 BIMTeki |
