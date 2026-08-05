@@ -1,0 +1,81 @@
+---
+name: bimteki-accessibility-review-table
+description: 在 BIMTeki 專案中生成「建築技術規則設計施工篇第十章 無障礙建築」檢討表（TableTemplate 表格樣板）。當使用者想要「做無障礙檢討表 / 無障礙建築檢討 / 產生無障礙設施檢討表 / 建築技術規則第十章檢討 / accessibility review table」時務必使用本 skill，即使沒有明講「skill」二字。表格為兩欄式：第一列為大標題，第二列起每列一條；左欄為固定的無障礙建築條文（第167條及第167-1～167-7條，逐字照抄），右欄為依本案填寫的檢討內容。右欄組法優先序：**能對應到自動文字者優先綁 autotext（如建築物用途/組別、汽車停車位數、應設無障礙停車位數），讓 BIMTeki 即時計算；無對應者填標準樣板句（依本案事實選「帶入實際值」或「本案未設…故不適用」）；外部引用一律留佔位符**。再用 create_project_table_template / modify_project_table_template 建表並讀回驗證。本 skill 只負責「無障礙建築檢討表」；土管檢討表、建照審查表、各層面積總表另有各自的 skill，不要用本 skill 處理。
+---
+
+# BIMTeki 無障礙建築檢討表生成
+
+在目前開啟的 BIMTeki 專案中，建立一份兩欄式「建築技術規則設計施工篇第十章 無障礙建築」檢討表。左欄為固定條文（第167條系列，逐字照抄、不改字），右欄「檢討」依本案填寫。結構與 `bimteki-permit-review-table` 相同，差別只在條文清單與檢討組法。
+
+右欄組法優先序（本 skill 核心）：
+1. **能綁 autotext 就綁** —— 讓 BIMTeki 即時計算，不寫死數字。
+2. **無對應 autotext → 標準樣板句** —— 依本案事實選「帶入實際值」或「本案未設…故不適用」。
+3. **外部引用 → 佔位符** —— 絕不臆測。
+
+各條的固定條文、需要的資料、autotext 比對關鍵字、樣板句，**以 `references/items.md` 為準**；本檔描述流程。
+
+> 需求前提：需連上使用者本機的 Archicad + BIMTeki Studio。
+
+## 前置檢查
+
+1. 呼叫 `bimteki:check_connection` 確認連線。
+2. 呼叫 `bimteki:get_project_status`（唯讀、成本低）確認專案狀態：`finalized`（已定案）、`project_file.hasFile`（false＝專案只在記憶體中、變更無法落地，請使用者先另存新檔）；若回報未開啟專案，詢問路徑後 `bimteki:open_bimteki_project` 再重試。
+3. 動手前告知即將建立的樣板名稱（預設「無障礙建築檢討表」），這是寫入專案的操作。
+
+## 蒐集專案資訊
+
+呼叫 `bimteki:get_project_core_snapshot`，至少關注：建築物用途/組別（H-2 集合住宅、G-2 辦公室等）、樓層數、是否住宅使用。讀不到就退樣板句或佔位符。
+
+**車位數另用 `bimteki:get_project_parking_info`**（唯讀）：`counts.actual_car`（實設汽車位，由停車區域推導）與 `counts.legal_car`（法定汽車位；`value` 為 -1 且 `isSet=false` 代表尚未填寫）。第167-5 條的無障礙停車位檢討要依汽車位總數換算，用這個工具判斷比從 snapshot 猜可靠。**判斷歸判斷，儲存格仍優先綁 autotext**，不要把讀到的數字寫死。
+
+## 取得自動文字目錄並比對
+
+呼叫 `bimteki:get_project_autotext_catalog(category="buildingOverview,volumeCheck")`（停車位數常在 volumeCheck/parking 類）。掃 `display` 名稱，對 `references/items.md`「自動文字對應」列出的 display 比對取 `token`：
+
+- **找到** → 用 autotext segment。
+- **找不到** → 退回文字：可帶入的實際值寫成文字，或依項目填樣板句/佔位符。
+
+**Token 是專案特定的，絕不憑記憶或跨專案硬編**；一律 catalog 比對後取用。用途組別、汽車停車位數通常可綁；無障礙應設數若無現成 token，依「總車位數 → 依表換算」以文字帶入。
+
+## 逐條組內容
+
+依 `references/items.md` 組出各列（第167、167-1～167-7）。每列：
+- **左欄（col 0）**：固定條文，含「第167條」等前綴，逐字照抄，不改寫。條文文字建議用 `bimteki:search_building_laws_and_orders` 或使用者現有圖說取現行版本核對。
+- **右欄（col 1）**：依優先序 autotext > 樣板句 > 佔位符 組 segments；長句 `newline: 2`。
+
+## 建表流程（沿用表格樣板既知眉角）
+
+1. **組 cells**：
+   - Row 0：大標題「建築技術規則設計施工篇第十章 無障礙建築」放 col 0，`textbold:true`、`textsize:1`、`alignment:1`、`charwidth:1`。跨欄合併留到步驟 3。
+   - Row 1~N：col 0、col 1 皆 `alignment:1`、`newline:2`（依中文換行）。
+2. `bimteki:create_project_table_template` 一次送完整 cells，**並同時帶 `merges`**（v0.7.1 起 create 已支援 `merges` / `equal_col` / 框線參數，不必留到 modify）：
+   - `merges=[{"row":0,"col":0,"colspan":2}]`。**合併只能靠這個參數**——寫在 cell 上的 `rowspan`/`colspan` 建立時仍會被忽略。
+   - `equal_col`：放置後的實際欄寬由 equalCol 決定，預設 `[0,1]` 等寬即可，本表不必特別帶；要左寬右窄再傳 `[0,0]`（非空的退化區間，別傳空陣列）。
+   - `newline` 與 `charwidth:1` 互斥；未指定 `charwidth/newline` 的格預設縮減字寬，故每格都要明確給定。
+3. 取新樣板 guid，`bimteki:modify_project_table_template` 補上 create 收不到的樣板層級屬性：
+   - `template_name`：「無障礙建築檢討表」（同名已存在加日期後綴）。
+   - `column_widths`：長度 2，起始 `[520,480]`（條文欄較寬；只影響編輯器顯示）。
+   - create 未生效的格式一併以 `cells` patch 修正（只帶 row/col 與要改欄位，內容保留）。
+   - **團隊協作要注意**：modify 前會先整批保留所有已放置的表格；若有表格被其他使用者保留，會回傳錯誤與 `lockedTables`（含 templateName／windowTitle／owner）**且不做任何修改** → 把清單轉告使用者，請持有者釋放後再重試。
+4. **驗證**：`bimteki:get_project_table_templates(template_guid=新guid)` 讀回，核對列數（標題＋條文數）、標題跨欄、左欄條文正確、右欄該綁 autotext 的格含 token、charwidth/newline/粗體。`statedata` 顯示原始 token 屬正常，核對看 `originaldata`。
+5. **回報**：樣板名稱、哪些條綁了 autotext（列出對應欄位）、哪些退樣板句、**哪些格留佔位符（待手填清單，逐條標明）**，並提醒可在 BIMTeki 表格管理器放置到圖面。
+
+## 儲存格寫法
+
+- 固定文字：`{"row":1,"col":0,"text":"第167條：...","newline":2}`。
+- 綁 autotext：
+  ```json
+  {"row":4,"col":1,"newline":2,
+   "segments":[
+     {"type":"text","value":"檢討：本案汽車車位設 "},
+     {"type":"autotext","token":"${...汽車停車位數...}"},
+     {"type":"text","value":" 輛，應設無障礙停車位 1 輛、本案設置 2 輛，符合規定。~ok"}]}
+  ```
+- 含佔位符：`{"segments":[{"type":"text","value":"檢討：本案非屬B-4組，故不適用。~ok"}]}`
+- 格式欄位：`textbold`、`charwidth`(0/1)、`newline`(0/1/2)、`alignment`(1/2)、`textsize`(1 僅標題/2)、`rowspan/colspan`(於 modify)。本表所有內容屬專案層級，儲存格不需 storyGuid。
+
+## 注意事項
+
+- **不可捏造**外部引用；免檢討句（167-4/167-5/167-7）為常見預設，BIMTeki 無法驗證，回報時提醒使用者確認是否與本案相符。
+- 新建樣板寫入專案並存檔，屬可逆性低操作；刪除舊樣板須使用者明確同意。
+- 右欄結尾「~ok」沿用來源範本慣例，使用者不需要可整批拿掉。

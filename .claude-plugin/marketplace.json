@@ -1,0 +1,27 @@
+{
+  "name": "bimteki",
+  "owner": {
+    "name": "BIMTeki",
+    "email": "office@arkiteki.com",
+    "url": "https://github.com/GOLLd765"
+  },
+  "description": "BIMTeki Studio 建照檢討 Skills — 在 Archicad 中自動產生建照圖說各式檢討表",
+  "plugins": [
+    {
+      "name": "bimteki",
+      "displayName": "BIMTeki 建照檢討",
+      "source": "./plugins/bimteki",
+      "description": "在 Archicad 中自動產生建照圖說的各式檢討表（面積總表、容積檢討、建蔽率、綠化、無障礙、土管、建照審查）、繪製容積區域、回填專案資訊。需搭配 BIMTeki Studio 外掛與 BIMTeki MCP 使用。",
+      "version": "1.0.0",
+      "author": {
+        "name": "BIMTeki",
+        "email": "office@arkiteki.com"
+      },
+      "homepage": "https://github.com/GOLLd765/bimteki-plugin",
+      "repository": "https://github.com/GOLLd765/bimteki-plugin",
+      "category": "productivity",
+      "keywords": ["archicad", "bim", "建照", "檢討表", "建築法規", "台灣"],
+      "tags": ["archicad", "bim", "建照", "檢討表"]
+    }
+  ]
+}

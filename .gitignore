@@ -1,0 +1,11 @@
+# OS 產生的雜訊檔案
+.DS_Store
+Thumbs.db
+
+# 編輯器暫存檔
+*.swp
+*~
+
+# Python 快取
+__pycache__/
+*.pyc
