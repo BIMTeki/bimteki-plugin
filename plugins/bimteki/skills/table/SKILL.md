@@ -1,5 +1,6 @@
 ---
 name: table
+argument-hint: "[permit|coverage|area|volume|basement|rooftop|landuse|a11y|site|green|list]"
 description: BIMTeki「製作檢討表格」的單一入口與總調度（hub）。凡是要做建照圖說裡的任何一張檢討表都從這裡進來——面積總表、各層容積、地下層容積、屋突、建照審查、土管、無障礙、基地概要、建蔽率、綠化。當使用者想要「製作檢討表格 / 產生檢討表 / 做面積表 / 做容積檢討 / 做建照審查表 / 做土管表 / 做無障礙檢討 / 做建蔽率檢討 / 做綠化檢討 / 做基地概要 / 做屋突檢討 / 這個建照有哪些檢討表可以做 / make review tables」時務必使用本 skill，即使沒有明講「skill」二字。可帶關鍵字直接指定要哪張表，例如 `/bimteki:table permit`（建照審查表）、`coverage`（建蔽率）、`area`（面積總表）——完整對照見下方「參數對照」。本 skill 不直接建表、不畫圖、不查法規，只負責確認連線與案型、判斷該表能否自動化、路由到各表專屬 skill；實際建表一律交給專屬 skill。逐段面積計算式表與純圖類不在範圍內。
 ---
 
