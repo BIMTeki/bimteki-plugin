@@ -84,9 +84,19 @@ https://github.com/GOLLd765/bimteki-plugin
 
 > **不需要設定 MCP。** 技能包裡已經帶了連接器設定，會自動找到步驟一裝好的 BIMTeki MCP，
 > 你不必執行 `claude mcp add`，也不必安裝任何擴充功能。
->
-> 若 Cowork 沒有自動連上，請改用 BIMTeki 提供的 `bimteki-mcp.mcpb`：Claude Desktop →
-> 設定 → 擴充功能 → 安裝該檔案。
+
+### ⚠️ 桌機版請務必在 Cowork 分頁使用，不是 Chat 分頁
+
+Claude 桌機版有兩個分頁，**BIMTeki 只在 Cowork 分頁能實際操作 Archicad**：
+
+| 分頁 | 技能看得到 | 能操作 Archicad |
+|---|---|---|
+| **Cowork** | ✅ | ✅ |
+| Chat | ✅ | ❌ |
+
+在 Chat 分頁一樣叫得出技能、Claude 也會讀取技能內容，但**連不上 Archicad**，最後會回你「找不到 BIMTeki 工具」。這不是安裝失敗，只是分頁用錯了。
+
+（Claude Code CLI 沒有這個區分，直接就能用。）
 
 ---
 
@@ -162,9 +172,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$env:ProgramW6432\BIMTeki S
 
 | 症狀 | 處理方式 |
 |---|---|
+| **桌機版：Claude 說「找不到 BIMTeki 工具」** | **十之八九是用到 Chat 分頁了。切到 Cowork 分頁再試一次** |
+| 桌機版：技能包裝了卻不是最新版、Update 按鈕是灰的 | Claude 手上的目錄是快取的。重開 Claude Desktop，或把 marketplace 移除後重新加入 |
 | 技能沒出現在清單裡 | 執行 `/reload-plugins`；仍無效就重開 Claude |
 | `/plugin` 指令不存在 | Claude Code 版本太舊，請更新到最新版 |
-| 檢查腳本全過，但 Claude 仍看不到工具 | 確認技能包已安裝且為啟用狀態（`/plugin` → Installed），必要時 `/reload-plugins` |
+| 檢查腳本全過，但 Claude 仍看不到工具 | 先確認是 Cowork 分頁；再確認技能包為啟用狀態（`/plugin` → Installed），必要時 `/reload-plugins` |
 | `/plugin` 的 Errors 分頁顯示連接器啟動失敗 | 跑上面的檢查腳本，依結果處理 |
 | Claude 說「無法連線到 Archicad」 | 連接器正常但 Archicad 沒開。確認 Archicad 開著、專案已開啟、BIMTeki 外掛已載入 |
 | 表格產生了但數值是空白 | 自動文字要放置到圖紙（Layout）上才會計算出實際值 |
