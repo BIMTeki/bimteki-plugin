@@ -131,17 +131,46 @@ https://github.com/GOLLd765/bimteki-plugin
 
 ## 疑難排解
 
+### 第一步：跑檢查腳本
+
+只要是「Claude 看不到 BIMTeki 工具」這一類的問題，**先跑這一支**，不用自己猜是哪裡壞掉。
+它隨 BIMTeki Studio 一起安裝，只讀不寫，不會改動任何東西。
+
+在 PowerShell 貼上執行：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:ProgramW6432\BIMTeki Studio\verify-mcp-install.ps1"
+```
+
+它會依序檢查登錄檔、檔案是否齊全，然後真的啟動連接器跑一次連線握手，最後告訴你卡在哪一關。
+
+看到 **「全部通過」** ＝ 這台機器的連接器沒問題，問題在 Claude 端（往下看下一節）。
+
+看到紅色 **[失敗]**，對照處理：
+
+| 失敗的項目 | 意思與處理方式 |
+|---|---|
+| 登錄檔：找不到 | 安裝時沒勾「Claude AI 連接器 (BIMTeki MCP)」，或安裝檔是加入連接器之前的舊版。重跑最新版安裝檔 |
+| 內嵌 Python / MCP 進入點 不存在 | 檔案不齊，重跑安裝檔 |
+| 預編譯 .pyc 太少 | 不影響功能，但連接器啟動會變慢。重跑安裝檔可修正 |
+| initialize 沒有回應 | 多半是防毒或公司資安軟體擋掉了連接器。請 IT 把 `BIMTeki Studio\mcp\python\python.exe` 加入白名單 |
+| stdout 被汙染 | 請把完整輸出寄給我們 |
+
+安裝時若看到「安裝位置不是預設」的提示，代表安裝到了非標準位置，Claude 將無法自動連上；請用預設位置重裝。
+
+### Claude 端
+
 | 症狀 | 處理方式 |
 |---|---|
 | 技能沒出現在清單裡 | 執行 `/reload-plugins`；仍無效就重開 Claude |
 | `/plugin` 指令不存在 | Claude Code 版本太舊，請更新到最新版 |
-| Claude 說「找不到 BIMTeki 工具」 | 連接器沒裝到。重跑 BIMTeki Studio 安裝檔，確認勾選「Claude AI 連接器」 |
-| `/plugin` 的 Errors 分頁顯示連接器啟動失敗 | 確認 `C:\Program Files\BIMTeki Studio\mcp\python\python.exe` 存在；不存在就是安裝時沒勾選該元件 |
-| Claude 說「無法連線到 Archicad」 | 確認 Archicad 開著、專案已開啟、BIMTeki 外掛已載入 |
+| 檢查腳本全過，但 Claude 仍看不到工具 | 確認技能包已安裝且為啟用狀態（`/plugin` → Installed），必要時 `/reload-plugins` |
+| `/plugin` 的 Errors 分頁顯示連接器啟動失敗 | 跑上面的檢查腳本，依結果處理 |
+| Claude 說「無法連線到 Archicad」 | 連接器正常但 Archicad 沒開。確認 Archicad 開著、專案已開啟、BIMTeki 外掛已載入 |
 | 表格產生了但數值是空白 | 自動文字要放置到圖紙（Layout）上才會計算出實際值 |
 | 授權相關錯誤 | 請聯繫 BIMTeki |
 
-若上述都無法解決，請聯繫 office@arkiteki.com，並附上 Claude 的錯誤訊息與 Archicad 版本。
+若上述都無法解決，請聯繫 office@arkiteki.com，並附上**檢查腳本的完整輸出**、Claude 的錯誤訊息與 Archicad 版本。
 
 ---
 
