@@ -6,7 +6,7 @@
     "name": "BIMTeki",
     "email": "office@arkiteki.com"
   },
-  "homepage": "https://github.com/GOLLd765/bimteki-plugin",
-  "repository": "https://github.com/GOLLd765/bimteki-plugin",
+  "homepage": "https://github.com/BIMTeki/bimteki-plugin",
+  "repository": "https://github.com/BIMTeki/bimteki-plugin",
   "keywords": ["archicad", "bim", "建照", "檢討表", "建築法規", "台灣"]
 }

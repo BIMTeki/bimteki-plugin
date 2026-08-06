@@ -2,7 +2,7 @@
 
 在 Archicad 中自動產生建照圖說的各式檢討表、繪製容積區域、回填專案資訊。
 
-安裝與使用說明請見 [repo 首頁](https://github.com/GOLLd765/bimteki-plugin)。
+安裝與使用說明請見 [repo 首頁](https://github.com/BIMTeki/bimteki-plugin)。
 
 ## 需求
 

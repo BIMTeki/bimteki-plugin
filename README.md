@@ -55,7 +55,7 @@ BIMTeki Studio 的 Claude 技能包。安裝後，你可以直接用中文交代
 在任一專案下啟動 `claude`，然後依序執行：
 
 ```
-/plugin marketplace add GOLLd765/bimteki-plugin
+/plugin marketplace add BIMTeki/bimteki-plugin
 /plugin install bimteki@bimteki
 ```
 
@@ -75,7 +75,7 @@ BIMTeki Studio 的 Claude 技能包。安裝後，你可以直接用中文交代
 4. 選 **Add from a repository**，貼上：
 
 ```
-https://github.com/GOLLd765/bimteki-plugin
+https://github.com/BIMTeki/bimteki-plugin
 ```
 
 5. 在出現的清單中找到 **BIMTeki 建照檢討**，按 **Install**
