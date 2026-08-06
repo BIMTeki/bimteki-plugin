@@ -20,6 +20,10 @@ description: 在 BIMTeki 專案中生成「建造執照及雜項執照規定項�
 ## 前置檢查
 
 1. 呼叫 `bimteki:check_connection` 確認與 Archicad / BIMTeki Studio 的連線。
+   **版本關卡**：`check_connection` 回傳最後一行「版本：」要看過（**沒有這行代表 MCP 早於 0.8.0，照常往下走、不要擋**）——使用者的 MCP／外掛
+   是隨安裝檔更新的，跟本 skill 常常不同期。需求版本與版本不足時的處理方式見
+   `../table/references/mcp-compat.md`；版本不夠就停手請使用者重跑安裝檔，
+   不要改用舊流程默默把表建出來（使用者會拿到一張跟預期不同的表卻不知道為什麼）。
 2. 呼叫 `bimteki:get_project_status`（唯讀、成本低）確認專案狀態：`finalized`（已定案）、`project_file.hasFile`（false＝專案只在記憶體中、變更無法落地，請使用者先另存新檔）。若回報未開啟 BIMTeki 專案，詢問使用者專案路徑後，用 `bimteki:open_bimteki_project` 協助開啟，再重試。
 3. 動手前先讓使用者知道即將建立的樣板名稱（預設「建照審查表」），這是寫入專案的操作。
 

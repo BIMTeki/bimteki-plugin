@@ -19,6 +19,10 @@ description: 在 BIMTeki 專案中生成「綠化面積檢討」表格（TableTe
 ## 前置檢查
 
 1. 呼叫 `bimteki:check_connection` 確認與 Archicad / BIMTeki Studio 的連線。多開時先 `bimteki:list_archicad_instances` 讓使用者確認要操作哪個專案，再 `bimteki:set_active_archicad_instance` 選定。
+   **版本關卡**：`check_connection` 回傳最後一行「版本：」要看過（**沒有這行代表 MCP 早於 0.8.0，照常往下走、不要擋**）——使用者的 MCP／外掛
+   是隨安裝檔更新的，跟本 skill 常常不同期。需求版本與版本不足時的處理方式見
+   `../table/references/mcp-compat.md`；版本不夠就停手請使用者重跑安裝檔，
+   不要改用舊流程默默把表建出來（使用者會拿到一張跟預期不同的表卻不知道為什麼）。
 2. 呼叫 `bimteki:get_project_status`（唯讀、成本低）確認專案狀態：`finalized` 為真代表案件已定案（本 skill 只建樣板、不寫專案資訊，仍應告知使用者）；`project_file.hasFile` 為假代表專案只在記憶體中、變更無法落地，請使用者先「另存新檔」。若回報未開啟 BIMTeki 專案，詢問使用者專案路徑後，用 `bimteki:open_bimteki_project` 協助開啟，再重試。
 3. 動手前先讓使用者知道即將建立的樣板名稱（預設「綠化面積檢討」），這是寫入專案並存檔的操作。若使用者在 Archicad 開著表格編輯器等模態視窗，MCP 會回報 modal dialog 錯誤——請他關掉再繼續。
 

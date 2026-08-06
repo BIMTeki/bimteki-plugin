@@ -156,6 +156,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$env:ProgramW6432\BIMTeki S
 
 看到 **「全部通過」** ＝ 這台機器的連接器沒問題，問題在 Claude 端（往下看下一節）。
 
+最後一行會印出 **MCP 版本**，回報問題時請一併附上。技能包（`/plugin` 一鍵更新）和連接器
+（要重跑安裝檔）是**分開更新**的，所以兩邊版本不一樣是常態；有疑問時把這個版本號告訴我們最快。
+
 看到紅色 **[失敗]**，對照處理：
 
 | 失敗的項目 | 意思與處理方式 |
@@ -180,6 +183,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$env:ProgramW6432\BIMTeki S
 | `/plugin` 的 Errors 分頁顯示連接器啟動失敗 | 跑上面的檢查腳本，依結果處理 |
 | Claude 說「無法連線到 Archicad」 | 連接器正常但 Archicad 沒開。確認 Archicad 開著、專案已開啟、BIMTeki 外掛已載入 |
 | 表格產生了但數值是空白 | 自動文字要放置到圖紙（Layout）上才會計算出實際值 |
+| Claude 說「你的 MCP 版本太舊」，或表格少了合併儲存格／框線 | 技能包更新了、連接器沒有。**重跑最新版 BIMTeki Studio 安裝檔**，裝完完全關掉再重開 Claude |
 | 授權相關錯誤 | 請聯繫 BIMTeki |
 
 若上述都無法解決，請聯繫 office@arkiteki.com，並附上**檢查腳本的完整輸出**、Claude 的錯誤訊息與 Archicad 版本。

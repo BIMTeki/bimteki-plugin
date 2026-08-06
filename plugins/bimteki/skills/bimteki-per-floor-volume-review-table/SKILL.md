@@ -19,6 +19,10 @@ description: 在 BIMTeki 專案中生成「各層容積檢討」表格（每一�
 1. `bimteki:check_connection`。多開時會要求選 instance：先 `bimteki:list_archicad_instances`
    讓使用者確認要操作哪個專案，再 `bimteki:set_active_archicad_instance` 選定，或每次呼叫帶
    `target_port`。
+   **版本關卡**：`check_connection` 回傳最後一行「版本：」要看過（**沒有這行代表 MCP 早於 0.8.0，照常往下走、不要擋**）——使用者的 MCP／外掛
+   是隨安裝檔更新的，跟本 skill 常常不同期。需求版本與版本不足時的處理方式見
+   `../table/references/mcp-compat.md`；版本不夠就停手請使用者重跑安裝檔，
+   不要改用舊流程默默把表建出來（使用者會拿到一張跟預期不同的表卻不知道為什麼）。
 2. `bimteki:get_project_status`（唯讀、成本低）確認專案狀態：`finalized`（已定案）、
    `project_file.hasFile`（false＝專案只在記憶體中、變更無法落地，請使用者先另存新檔）。
    回報未開啟 BIMTeki 專案就詢問路徑並用 `bimteki:open_bimteki_project` 開啟後重試。

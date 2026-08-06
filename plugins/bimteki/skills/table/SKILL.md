@@ -14,7 +14,11 @@ description: BIMTeki「製作檢討表格」的單一入口與總調度（hub）
 
 ## 流程
 
-1. **前置檢查**：呼叫 `bimteki:check_connection`（純諮詢可略過）。要建表時再 `bimteki:get_project_status`（唯讀、成本低）確認可讀專案、並看 `finalized`（已定案）與 `project_file.hasFile`（false＝專案只在記憶體中、變更無法落地，請使用者先另存新檔）；回報未開啟專案則詢問路徑後 `bimteki:open_bimteki_project`。呼叫 `bimteki:get_project_core_snapshot` 取案型（以 `building.case_type` 為準）供分類。
+1. **前置檢查**：呼叫 `bimteki:check_connection`（純諮詢可略過）。**回傳最後一行「版本：」要看過**
+   （**沒有這行代表 MCP 早於 0.8.0，照常往下走、不要擋**）——使用者的 MCP／外掛是隨安裝檔更新的，
+   跟 skill 常常不同期；需求版本與版本不足時的處理方式見 `references/mcp-compat.md`，
+   真的版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默把表建出來。
+   要建表時再 `bimteki:get_project_status`（唯讀、成本低）確認可讀專案、並看 `finalized`（已定案）與 `project_file.hasFile`（false＝專案只在記憶體中、變更無法落地，請使用者先另存新檔）；回報未開啟專案則詢問路徑後 `bimteki:open_bimteki_project`。呼叫 `bimteki:get_project_core_snapshot` 取案型（以 `building.case_type` 為準）供分類。
 2. **釐清要做哪張表**：**呼叫本 skill 時若帶了參數（如 `/bimteki:table permit`），先查下方「參數對照」直接認定要做哪張表，不要再問一次、也不要列清單**；參數可以是關鍵字、中文表名或其簡稱，比對不到才回頭問。沒帶參數且只說「製作檢討表格」時，先用 `references/table-catalog.md` 摘要本案可做的檢討表清單（分兩類：A 有專屬 skill／B 可綁 autotext 尚無 skill），請使用者勾選。不要一次全建。若使用者要的是逐段面積計算式表或純圖類（非本 skill 範圍），直接說明本 skill 不做這類，不要嘗試生成。
 3. **分類並路由**（見下）。
 4. **回報**：說明各表交給了哪個 skill（A 類）或如何自建（B 類）。
@@ -72,7 +76,8 @@ description: BIMTeki「製作檢討表格」的單一入口與總調度（hub）
 
 ## 各 spoke 共用的 MCP 眉角（最新工具版本）
 
-這幾點在每個建表 skill 裡都成立，路由前可先提醒：
+這幾點在每個建表 skill 裡都成立，路由前可先提醒。**以下都以 MCP ≥ 0.7.1 為前提**；
+使用者版本較舊時的判斷與話術見 `references/mcp-compat.md`，不要自己改用舊流程繞過。
 
 - **`create_project_table_template` 已能一步建完整表**（v0.7.1 起支援 `merges` / `equal_col` /
   `right_line` / `bottom_line` / `left_line` / `top_line`）。合併只能用 `merges` 參數——寫在 cell 上的
