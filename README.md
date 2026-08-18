@@ -10,7 +10,7 @@ BIMTeki Studio 的 Claude 技能包。安裝後，你可以直接用中文交代
 
 | 技能 | 用途 |
 |---|---|
-| `table` | **檢討表單一入口**。`/bimteki:table <關鍵字>` 直接做指定的表（permit 建照審查／coverage 建蔽率／area 面積總表／volume 各層容積／basement 地下層／rooftop 屋突／landuse 土管／a11y 無障礙／site 基地概要／green 綠化）；不帶參數則列出本案可做的表讓你挑 |
+| `table` | **檢討表單一入口**。`/bimteki:table <關鍵字>` 直接做指定的表（permit 建照審查／coverage 建蔽率／area 面積總表／volume 各層容積／basement 地下層／rooftop 屋突／landuse 土管／a11y 無障礙／site 基地概要／green 綠化／custom 自訂）；不帶參數則列出本案可做的表讓你挑 |
 | `bimteki-area-summary-table` | 各層樓地板面積總表 |
 | `bimteki-per-floor-volume-review-table` | 各層容積檢討表（每個地上層一張） |
 | `bimteki-basement-volume-review-table` | 地下層容積檢討表 |
@@ -18,6 +18,7 @@ BIMTeki Studio 的 Claude 技能包。安裝後，你可以直接用中文交代
 | `bimteki-site-overview-table` | 基地概要表 |
 | `bimteki-coverage-review-table` | 建蔽率檢討表（建築面積檢討） |
 | `bimteki-green-area-review-table` | 綠化面積檢討表 |
+| `bimteki-custom-area-review-table` | 自訂區域檢討表（自訂面積比例檢討，例：宜居建築垂直綠化；需自訂區域檢討模組授權） |
 | `bimteki-permit-review-table` | 建造執照規定項目審查表（第 18~27 項） |
 | `bimteki-landuse-review-table` | 依土管文件生成土管檢討表 |
 | `bimteki-accessibility-review-table` | 無障礙建築檢討表 |

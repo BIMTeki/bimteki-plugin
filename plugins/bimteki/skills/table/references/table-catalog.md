@@ -24,6 +24,7 @@
 | A0-03 | 建蔽率檢討表（表格標題「建築面積檢討」：基地面積→保留地/道路退縮地/鄰房侵占/騎樓/騎樓地扣除→使用面積→設計建築面積→建蔽率檢討） | coverage | **A** | → `bimteki-coverage-review-table` |
 | A0-01 | 畸零地檢討小表（寬度/深度 法定vs基地） | 基地尺寸 | **B**（部分佔位） | autotext: `siteOverview`；面前道路寬多半無→佔位 |
 | A0-05 | 綠化面積檢討表（實設空地/法定空地→綠化面積→綠化困難→應綠化→喬木數量；**限都計內/有土管或特殊條例才須做，非都計免檢討**） | green 類 | **A** | → `bimteki-green-area-review-table`（先判都計內外；規定值依土管） |
+| 依案而定 | 自訂面積項目檢討表（地方特別法規等自訂面積比例檢討，例：宜居建築垂直綠化；建一個總檢討項目→掛散裝區域／區域組合→組比例） | customAreaReview | **A** | → `bimteki-custom-area-review-table`（需 MCP ≥ 0.12.0 與模組授權） |
 
 ## 判斷「能不能綁 autotext」的通則
 
@@ -41,6 +42,7 @@
 - `storyArea`（targetTypeName: story，需 storyGuid）：樓層名稱、當層樓地板面積、各空間面積、用途。
 - `green`（綠化類）：實設空地/法定空地、設計綠化面積、無法綠化面積、應設綠化面積算式、綠化面積檢討式、喬木檢討式。→ `bimteki-green-area-review-table`。
 - 停車類：以 catalog 實際回傳的 display 為準比對（版本命名可能不同）。
+- `customAreaReview`：自訂面積項目檢討的散裝區域面積與區域組合合計。**不需掃 catalog**——token 由專屬工具 `get_project_custom_area_review` 的 `zones[].token`／`groups[].token` 直接取得（同名區域 catalog 分不出來，該工具以 GUID 分）。
 
 Token 是專案特定的，**絕不憑記憶或跨專案硬編**；一律 catalog 比對後取用。
 
@@ -58,4 +60,5 @@ Token 是專案特定的，**絕不憑記憶或跨專案硬編**；一律 catalo
 | 基地概要表（基地資訊/建蔽容積規定值vs設計小表） | `bimteki-site-overview-table` | 兩欄，含7項法規檢討與算式列 |
 | 建蔽率檢討表（建築面積檢討） | `bimteki-coverage-review-table` | 兩欄，coverage 算式綁定；扣除列（保留地/退縮地/鄰房侵占/騎樓/騎樓地）依面積>0 條件顯示，騎樓地另需扣除設定 |
 | 綠化面積檢討表 | `bimteki-green-area-review-table` | 兩欄，green 算式綁定；**限都計內/有土管才須做**，規定值（比率/喬木密度）依本案土管；綠化困難列依面積>0 條件顯示 |
+| 自訂面積項目檢討表 | `bimteki-custom-area-review-table` | 依使用者檢討方式動態組表；建**一個**總檢討項目→掛散裝區域／區域組合（多顆用組合取合計 token，勿寫 `{=a+b+c}`）→組比例；需 MCP ≥ 0.12.0（區域組合）與「自訂面積項目檢討」模組授權 |
 | 宜居建築設施＋自治條例第50條 | 已移除（原 `bimteki-livable-building-review-table`） | 兩欄式法規檢討，需要時可重建 skill |

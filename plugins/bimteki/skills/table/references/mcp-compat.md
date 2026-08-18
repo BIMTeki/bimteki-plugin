@@ -51,6 +51,8 @@ skills 更新是**一鍵**、其他三條要**重跑安裝檔**，所以「skill
 |---|---|---|
 | 所有檢討表 spoke skill 的建表流程 | **MCP ≥ 0.7.1** | `create_project_table_template` 不接受 `merges` / `equal_col` / 框線參數，必須退回「先 create 再 modify 補」的舊兩步流程 |
 | 版本回報本身 | MCP ≥ 0.8.0、外掛 ≥ 0.0.11 | 問不到版本，只能靠使用者跑 `verify-mcp-install.ps1` 回報 |
+| 自訂面積項目檢討表（`bimteki-custom-area-review-table`）的基本流程 | **MCP ≥ 0.11.0**（另需訂閱含「自訂面積項目檢討」模組授權；試用方案不含） | 工具清單裡沒有 `get_project_custom_area_review`／`set_project_custom_area_review`，無法建檢討項目與匯入區域——停手請使用者重跑安裝檔；授權不足時工具回 `error_code="feature_not_licensed"`，請使用者聯絡 BIMTeki 客服 |
+| ↳ 其中的**區域組合**（`create_group`／`rename_group`／`delete_group`／`add_zones_to_group`／`remove_zones_from_group`） | **MCP ≥ 0.12.0** | `set_project_custom_area_review` 的說明裡沒有 `create_group`——多顆填充構成同一個量時只能退回表格內 `{=a+b+c}` 湊合計，要跟使用者說明這是版本限制而非設計 |
 
 > 注意 MCP 工具的**參數本來就是自我描述的**：舊版 MCP 不會把 `merges` 放進 schema，
 > 所以你不會「送了一個不存在的參數」。真正的風險是——skill 叫你帶 `merges`、
