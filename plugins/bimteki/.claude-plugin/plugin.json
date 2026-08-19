@@ -1,7 +1,7 @@
 {
   "name": "bimteki",
   "description": "在 Archicad 中自動產生建照圖說的各式檢討表、繪製容積區域、回填專案資訊。需搭配 BIMTeki Studio 外掛與 BIMTeki MCP 使用。",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "author": {
     "name": "BIMTeki",
     "email": "office@arkiteki.com"
