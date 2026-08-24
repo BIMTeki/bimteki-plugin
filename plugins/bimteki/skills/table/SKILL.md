@@ -30,18 +30,18 @@ description: BIMTeki「製作檢討表格」的單一入口與總調度（hub）
 
 | 關鍵字 | 也接受 | 檢討表 | 交給 |
 |---|---|---|---|
-| `審查` | `permit`、建照審查、審查表 | 建照審查表第18~27項 | `bimteki-permit-review-table` |
-| `建蔽` | `coverage`、建蔽率、建築面積檢討 | 建蔽率檢討表 | `bimteki-coverage-review-table` |
-| `面積總表` | `area`、面積、樓地板面積、各層樓地板面積 | 各層樓地板面積總表 | `bimteki-area-summary-table` |
-| `容積` | `volume`、各層容積、地上層容積 | 各層容積檢討表（每地上層一張） | `bimteki-per-floor-volume-review-table` |
-| `地下` | `basement`、地下層、地下室 | 地下層容積檢討表 | `bimteki-basement-volume-review-table` |
-| `屋突` | `rooftop` | 屋突面積檢討表 | `bimteki-rooftop-area-review-table` |
-| `土管` | `landuse`、土地使用分區 | 土管檢討表 | `bimteki-landuse-review-table` |
-| `無障礙` | `a11y`、無障礙建築 | 無障礙建築檢討表 | `bimteki-accessibility-review-table` |
-| `基地` | `site`、基地概要、基地資訊 | 基地概要表 | `bimteki-site-overview-table` |
-| `綠化` | `green`、綠覆、綠化面積 | 綠化面積檢討表 | `bimteki-green-area-review-table` |
-| `技規` | `floorcode`、平面圖檢討、各層技規、法規檢討 | 各層平面圖法規檢討表（A1 圖上，非 A0） | `bimteki-floor-plan-code-review-table` |
-| `自訂` | `custom`、自訂檢討、自訂面積項目檢討、自訂區域檢討、特定檢討項目 | 自訂面積項目檢討表（依使用者提供的檢討方式，例：宜居建築垂直綠化） | `bimteki-custom-area-review-table` |
+| `審查` | `permit`、建照審查、審查表 | 建照審查表第18~27項 | `table-permit` |
+| `建蔽` | `coverage`、建蔽率、建築面積檢討 | 建蔽率檢討表 | `table-coverage` |
+| `面積總表` | `area`、面積、樓地板面積、各層樓地板面積 | 各層樓地板面積總表 | `table-area-summary` |
+| `容積` | `volume`、各層容積、地上層容積 | 各層容積檢討表（每地上層一張） | `table-per-floor-volume` |
+| `地下` | `basement`、地下層、地下室 | 地下層容積檢討表 | `table-basement-volume` |
+| `屋突` | `rooftop` | 屋突面積檢討表 | `table-rooftop-area` |
+| `土管` | `landuse`、土地使用分區 | 土管檢討表 | `table-landuse` |
+| `無障礙` | `a11y`、無障礙建築 | 無障礙建築檢討表 | `table-accessibility` |
+| `基地` | `site`、基地概要、基地資訊 | 基地概要表 | `table-site-overview` |
+| `綠化` | `green`、綠覆、綠化面積 | 綠化面積檢討表 | `table-green-area` |
+| `技規` | `floorcode`、平面圖檢討、各層技規、法規檢討 | 各層平面圖法規檢討表（A1 圖上，非 A0） | `table-floor-plan-code` |
+| `自訂` | `custom`、自訂檢討、自訂面積項目檢討、自訂區域檢討、特定檢討項目 | 自訂面積項目檢討表（依使用者提供的檢討方式，例：宜居建築垂直綠化） | `table-custom-area` |
 | `清單` | `list` | 只列出本案可做的表，不建表 | （本 skill 自己回答） |
 
 注意「`容積`」是**地上層**的各層容積檢討，地下層要用「`地下`」——兩者是不同的表，別混。
@@ -53,20 +53,20 @@ description: BIMTeki「製作檢討表格」的單一入口與總調度（hub）
 
 | 檢討表 | 圖號 | 路由到 |
 |---|---|---|
-| 各層樓地板面積總表 (A)(B)(C)(D) | A0-01 | `bimteki-area-summary-table` |
-| 各層容積檢討表（每一地上樓層一張） | A0-12~14 | `bimteki-per-floor-volume-review-table` |
-| 地下層容積檢討表（地下層總計容積檢討，含停車空間） | A0-11 | `bimteki-basement-volume-review-table` |
-| 屋突面積檢討表 | A0-12~14 | `bimteki-rooftop-area-review-table` |
-| 建造執照及雜項執照規定項目審查表（第18~27項） | A0-01 | `bimteki-permit-review-table` |
-| 土地使用分區管制要點檢討（土管檢討表） | A0-02 | `bimteki-landuse-review-table`（需使用者提供土管 PDF；三欄式） |
-| 建築技術規則設計施工篇第十章 無障礙建築 | A0-06 | `bimteki-accessibility-review-table` |
-| 基地概要表（基地資訊/建蔽容積規定值vs設計小表） | A0-01 | `bimteki-site-overview-table` |
-| 建蔽率檢討表（表格標題「建築面積檢討」：基地面積→扣除項→使用面積→設計建築面積→建蔽率檢討） | A0-03 | `bimteki-coverage-review-table` |
-| 綠化面積檢討表（實設空地/法定空地→綠化面積→綠化困難→應綠化→喬木數量；**都計內/有土管才須做**） | A0-05 | `bimteki-green-area-review-table`（先判都計內外，非都計免檢討；規定值依土管） |
-| 各層平面圖法規檢討表（兩欄式：`○○檢討：#NN` ＋ 條文原文＋檢討結論；核心 9 條各層共通，依樓層角色增減） | **A1-xx**（畫在各層平面圖上，每層各一張；標準層可跨層共用） | `bimteki-floor-plan-code-review-table` |
-| 自訂面積項目檢討表（使用者自訂面積比例檢討，例：宜居建築垂直綠化；建一個總檢討項目→掛散裝區域／區域組合→組比例） | 依案而定 | `bimteki-custom-area-review-table`（需 MCP ≥ 0.12.0 與「自訂面積項目檢討」模組授權） |
+| 各層樓地板面積總表 (A)(B)(C)(D) | A0-01 | `table-area-summary` |
+| 各層容積檢討表（每一地上樓層一張） | A0-12~14 | `table-per-floor-volume` |
+| 地下層容積檢討表（地下層總計容積檢討，含停車空間） | A0-11 | `table-basement-volume` |
+| 屋突面積檢討表 | A0-12~14 | `table-rooftop-area` |
+| 建造執照及雜項執照規定項目審查表（第18~27項） | A0-01 | `table-permit` |
+| 土地使用分區管制要點檢討（土管檢討表） | A0-02 | `table-landuse`（需使用者提供土管 PDF；三欄式） |
+| 建築技術規則設計施工篇第十章 無障礙建築 | A0-06 | `table-accessibility` |
+| 基地概要表（基地資訊/建蔽容積規定值vs設計小表） | A0-01 | `table-site-overview` |
+| 建蔽率檢討表（表格標題「建築面積檢討」：基地面積→扣除項→使用面積→設計建築面積→建蔽率檢討） | A0-03 | `table-coverage` |
+| 綠化面積檢討表（實設空地/法定空地→綠化面積→綠化困難→應綠化→喬木數量；**都計內/有土管才須做**） | A0-05 | `table-green-area`（先判都計內外，非都計免檢討；規定值依土管） |
+| 各層平面圖法規檢討表（兩欄式：`○○檢討：#NN` ＋ 條文原文＋檢討結論；核心 9 條各層共通，依樓層角色增減） | **A1-xx**（畫在各層平面圖上，每層各一張；標準層可跨層共用） | `table-floor-plan-code` |
+| 自訂面積項目檢討表（使用者自訂面積比例檢討，例：宜居建築垂直綠化；建一個總檢討項目→掛散裝區域／區域組合→組比例） | 依案而定 | `table-custom-area`（需 MCP ≥ 0.12.0 與「自訂面積項目檢討」模組授權） |
 
-路由方式：告知使用者「這張表由 ⟪skill 名⟫ 負責」，交給該 skill 接手。土管表特別注意：`landuse-review-table` 會**讀使用者上傳的土管文件**逐條萃取條文，若使用者沒附文件，先請他提供再路由。
+路由方式：告知使用者「這張表由 ⟪skill 名⟫ 負責」，交給該 skill 接手。土管表特別注意：`table-landuse` 會**讀使用者上傳的土管文件**逐條萃取條文，若使用者沒附文件，先請他提供再路由。
 
 ### B. autotext 可綁、尚無專屬 skill → 依 catalog 分類自行建表
 
@@ -76,7 +76,7 @@ description: BIMTeki「製作檢討表格」的單一入口與總調度（hub）
 
 ### 不在範圍內：逐段面積計算式表、純圖類
 
-「面積計算式」類（每列一段 `尺寸 × 尺寸 = 面積`，來自實際量測的多邊形邊段）與純圖類（如各層無障礙檢討平面圖）**不是可自動化的檢討表，本 skill 不做、也不列入清單**。若使用者要這類，直接說明本 skill 不處理；面積來源可另建議用容積區域繪製 skill（`bimteki-volume-zones-v2`）或 `bimteki:split_areas_and_return_map` / `get_bimteki_zone_map` 取數據輔助人工填表。不要假裝能一鍵生成、不要捏造計算式列。
+「面積計算式」類（每列一段 `尺寸 × 尺寸 = 面積`，來自實際量測的多邊形邊段）與純圖類（如各層無障礙檢討平面圖）**不是可自動化的檢討表，本 skill 不做、也不列入清單**。若使用者要這類，直接說明本 skill 不處理；面積來源可另建議用 `bimteki:split_areas_and_return_map` / `get_bimteki_zone_map` 取數據輔助人工填表。不要假裝能一鍵生成、不要捏造計算式列。
 
 ## 各 spoke 共用的 MCP 眉角（最新工具版本）
 
