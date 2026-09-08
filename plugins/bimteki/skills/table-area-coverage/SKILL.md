@@ -1,11 +1,11 @@
 ---
-name: table-coverage
-description: 在 BIMTeki 專案中生成「建蔽率檢討」表格（表格標題為「建築面積檢討」，建照圖說 A0-03）。當使用者說「做建蔽率檢討表 / 建立建築面積檢討 / 產生建蔽率檢討 / coverage ratio review table」，或由 `table` skill 帶 `coverage` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。**先依 `get_project_core_snapshot` 的 `land.parcels` 數量分兩種版面**：單一使用分區→兩欄式；多分區→陣列欄向版面（每分區一欄，靠 `LandParcel.Parcels`＋`fieldsOrientation:1` 展開）。列組成、扣除項出現條件與 MCP 呼叫順序見本文，值一律綁 autotext。基地概要表、綠化檢討表另有專屬 skill，不要用本 skill 代替。
+name: table-area-coverage
+description: 在 BIMTeki 專案中生成「建蔽率檢討」表格（表格標題為「建築面積檢討」）。當使用者說「做建蔽率檢討表 / 建立建築面積檢討 / 產生建蔽率檢討 / coverage ratio review table」，或由 `table-area` skill 帶 `coverage` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。**先依 `get_project_core_snapshot` 的 `land.parcels` 數量分兩種版面**：單一使用分區→兩欄式；多分區→陣列欄向版面（每分區一欄，靠 `LandParcel.Parcels`＋`fieldsOrientation:1` 展開）。列組成、扣除項出現條件與 MCP 呼叫順序見本文，值一律綁 autotext。基地概要表、綠化檢討表另有專屬 skill，不要用本 skill 代替。
 ---
 
 # BIMTeki 建蔽率檢討表生成（表格標題「建築面積檢討」）
 
-在目前開啟的 BIMTeki 專案中，建立一份「建蔽率檢討」表格樣板（表格內大標題為 **建築面積檢討**，A0-03 常見）。把基地面積 → 逐項扣除 → 使用面積（建蔽率分母）→ 法定建蔽率 → 設計建築面積（分子）→ 建蔽率檢討，濃縮成一張速覽表。
+在目前開啟的 BIMTeki 專案中，建立一份「建蔽率檢討」表格樣板（表格內大標題為 **建築面積檢討**）。把基地面積 → 逐項扣除 → 使用面積（建蔽率分母）→ 法定建蔽率 → 設計建築面積（分子）→ 建蔽率檢討，濃縮成一張速覽表。
 
 **本表有兩種版面，先判斷使用分區數再決定**（`get_project_core_snapshot` 的 `land.parcels` 陣列長度）：
 
@@ -20,13 +20,12 @@ description: 在 BIMTeki 專案中生成「建蔽率檢討」表格（表格標�
 
 ## 前置檢查
 
-1. `bimteki:check_connection`。多開時先 `bimteki:list_archicad_instances` 讓使用者確認要操作哪個專案，再 `bimteki:set_active_archicad_instance` 選定（多開時未選定，其他工具會回報「偵測到多個 instance」錯誤）。
-   **版本關卡**：`check_connection` 回傳最後一行「版本：」要看過（**沒有這行代表 MCP 早於 0.8.0，照常往下走、不要擋**）——使用者的 MCP／外掛
-   是隨安裝檔更新的，跟本 skill 常常不同期。需求版本與版本不足時的處理方式見
-   `../table/references/mcp-compat.md`；版本不夠就停手請使用者重跑安裝檔，
-   不要改用舊流程默默把表建出來（使用者會拿到一張跟預期不同的表卻不知道為什麼）。
-2. `bimteki:get_project_status`（唯讀、成本低）確認專案狀態：`finalized`（已定案）、`project_file.hasFile`（false＝專案只在記憶體中、變更無法落地，請使用者先另存新檔）。回報未開啟 BIMTeki 專案就詢問路徑並 `bimteki:open_bimteki_project` 開啟後重試。
-3. 動手前讓使用者知道即將建立的樣板名稱（預設「建蔽率檢討」）。若使用者開著表格編輯器等模態視窗，MCP 會回報 modal dialog 錯誤——請他關掉再繼續。
+標準順序與細節見 `../table/references/spoke-conventions.md` 第 1 節，摘要：
+
+1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `../table/references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
+2. `bimteki:get_project_status`：`finalized`／`project_file.hasFile`／`has_unsaved_changes`；未開啟專案就問路徑後 `bimteki:open_bimteki_project` 再重試。
+3. **建蔽區域已匯入**（共用規範第 1 節第 4 步）：`bimteki:get_bimteki_zone_map` 的 `counts.arch` 為 0 就停手請使用者先自行在 Archicad 繪製建築面積區域並匯入 BIMTeki；不代畫、不呼叫建立區域的工具、不建表。
+4. 動手前告知即將建立的樣板名稱（預設「建蔽率檢討」）與判斷結果，這是寫入專案並存檔的操作；使用者開著表格編輯器等模態視窗時請他先關掉。
 
 ## 蒐集專案資訊 → 決定版面與顯示哪些列
 
@@ -55,7 +54,7 @@ description: 在 BIMTeki 專案中生成「建蔽率檢討」表格（表格標�
 
 列（標題 + 依序）：
 
-1. **標題**「建築面積檢討」：`textbold:true`、`textsize:1`、`alignment:1`（靠左）；modify 以 `merges=[{row:0,col:0,colspan:2}]` 跨兩欄。
+1. **標題**「建築面積檢討」：`textbold:true`、`textsize:1`、`alignment:1`（靠左）；以 `merges=[{row:0,col:0,colspan:2}]` 跨兩欄（create 時帶）。
 2. **基地面積：** `面積：基地面積總計` ＋ `m²`。
 3. **扣除列（條件顯示）**：保留地／道路退縮地／鄰房侵佔／騎樓／騎樓地，各 `面積：…總計` ＋ `m²`；依上面規則面積>0（騎樓地另需設定）才放。
 4. **使用面積：** `面積：使用面積(建蔽率用)總計` ＋ `m²`。**單分區務必用這個純面積 token**——實測 `計算式：使用面積(建蔽率用)總計計算式` 在單分區無扣除時會渲染成壞掉的 `0.00m²`（只有多分區才正常）。
@@ -63,7 +62,7 @@ description: 在 BIMTeki 專案中生成「建蔽率檢討」表格（表格標�
 6. **設計建築面積：** `面積：設計建築面積` ＋ `m²`。
 7. **建蔽率檢討：** `計算式：設計建蔽率計算式` ＋ 文字「，」＋ `計算式：設計建蔽率檢討式`（如 `198.33/330.58=59.99%，59.99%≤60% 符合規定...OK!`）；`newline:2`。
 
-建表：`create_project_table_template` 送 cells → `modify_project_table_template` 補 `template_name`、`merges`(標題)、`column_widths=[220,680]`、**`equal_col=[0,0]`**、全格線（見下）。
+建表：`create_project_table_template` 一次帶 cells、`merges`(標題)、**`equal_col=[0,0]`**、全格線 → `modify_project_table_template` 補 `template_name`、`column_widths=[220,680]`（見下）。
 
 ## 版面 B：多個使用分區（陣列欄向）
 
@@ -87,16 +86,12 @@ description: 在 BIMTeki 專案中生成「建蔽率檢討」表格（表格標�
 
 ## 建表流程（兩版共通）
 
-1. **組 cells**：每格明確給 `newline`（create 對未指定 `newline`/`charwidth` 的格會預設 `charwidth:1` 縮減字寬）。全部 `alignment:1`（靠左，含標題）。
-2. `create_project_table_template`，**一次帶齊 `cells`、`merges`、`equal_col`、全格線**（v0.7.1 起 create 已支援 `merges` / `equal_col` / `right_line` / `bottom_line` / `left_line` / `top_line`，不必再「先建再 modify 補」）。取回傳 `nodeGuid`。
-   - **合併只能用 `merges` 參數**；寫在 cell 上的 `rowspan`/`colspan` 建立時仍會被忽略。
-   - **`equal_col=[0,0]`**：新建表格預設 `equalCol=[0,1…]`（強制等寬）會蓋掉 `column_widths`，用非空的單欄群組 `[0,0]` 解除。
-   - **格線**：明確帶 `left_line`（每列 1）、`top_line`（每欄 1）、`right_line`／`bottom_line`（每列×每欄全 1）把整表框滿。
-3. `modify_project_table_template` 補上 create 收不到的樣板層級屬性：`template_name`（同名已存在加日期後綴）、`column_widths`、`table_type="normal"`。
-   - 步驟 4 讀回若發現 `equalCol` 仍是 `[0,1…]`，在此補傳 `equal_col=[0,0]`。**舊版實測傳 `equal_col=[]`（空陣列）不生效**（被當成未提供）→ 一律用 `[0,0]`，別傳空陣列。
-   - **團隊協作要注意**：modify 前會先整批保留所有已放置的表格；若有表格被其他使用者保留，會回傳錯誤與 `lockedTables`（含 templateName／windowTitle／owner）**且不做任何修改** → 把清單轉告使用者，請持有者釋放後再重試。
-4. **驗證**：`get_project_table_templates(template_guid=新guid)` 讀回核對列/欄數、標籤文字、各格 token、merges、`equalCol` 應為 `[0,0]`。
-   - **未放置到圖面**時陣列不展開、`statedata` 顯示原始 token（正常）；要看實際值用 **`evaluate_autotext_values(category="coverage,siteOverview")`**（通用版；`evaluate_story_autotext_values` 只涵蓋 storyArea，對本表的 token 會回空且不報錯），要看展開版面須放到 layout。
+共通眉角見 `../table/references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
+
+1. **組 cells**：每格明確給 `newline`（不依賴預設的縮減字寬）。全部 `alignment:1`（靠左，含標題）。
+2. `create_project_table_template` 一次帶齊 `cells`、`merges`（合併只能用這個參數）、**`equal_col=[0,0]`**（解除新表預設的強制等寬，`column_widths` 才會生效；別傳空陣列）、**全格線**（`left_line` 每列 1、`top_line` 每欄 1、`right_line`／`bottom_line` 每列×每欄全 1，把整表框滿）。取回傳 `nodeGuid`。
+3. `modify_project_table_template` 補上 `template_name`（預設「建蔽率檢討」，同名加日期後綴）、`column_widths`、`table_type="normal"`；步驟 4 讀回若 `equalCol` 仍是 `[0,1…]`，在此補傳 `equal_col=[0,0]`。
+4. **驗證**：`get_project_table_templates(template_guid=新guid)` 讀回核對列/欄數、標籤文字、各格 token、merges、`equalCol` 應為 `[0,0]`。未放置到圖面時陣列不展開；要看實際值用 **`evaluate_autotext_values(category="coverage,siteOverview")`**（通用版；`evaluate_story_autotext_values` 對本表的 token 會回空且不報錯），要看展開版面須放到 layout。
 5. **回報**：說明版面（單/多分區）、顯示了哪些扣除列、各列綁的 token、以及**多分區因 MCP 讀不到陣列展開後的儲存格文字，請使用者放到圖面目視確認**分區表頭與各值。
 
 ## 已知限制（多分區，需外掛端處理）
@@ -111,4 +106,3 @@ description: 在 BIMTeki 專案中生成「建蔽率檢討」表格（表格標�
 - **單分區使用面積用純面積 token、不用計算式**（計算式在單分區會壞成 0.00m²）。
 - **不可捏造**：騎樓地扣除設定讀不到就問使用者；外部/行政資訊留佔位符。
 - **扣除項數值不對時不要在表格裡硬改**：保留地／道路退縮地／道路退縮地(計入法空)／鄰房侵占屬專案資料，有 `bimteki:set_land_deduction_areas` 可逐分區寫回，但**僅限「扣除項使用者自訂」模式**（`get_project_core_snapshot` 的 `land.is_user_define_reserved_area` 為 true，且各 `land.parcels[].deductions` 的 `writable` 為 true）；預設的「由區域推導」模式下寫進去會被下次重算清掉，工具會直接拒絕，而且**不會代為切換模式**——必須由使用者自己到土地資訊設定切換。騎樓面積／騎樓樓地面積兩種模式下都由建築面積區域重建，屬純計算值、不可寫。
-- 新建樣板會寫入專案並存檔；刪除舊樣板（`manage_project_table_templates` delete）須先取得使用者明確同意。已放置的表格 delete 後會轉為靜態表格（不會從圖面移除），圖面物件需使用者自行刪。

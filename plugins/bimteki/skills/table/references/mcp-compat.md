@@ -51,8 +51,10 @@ skills 更新是**一鍵**、其他三條要**重跑安裝檔**，所以「skill
 |---|---|---|
 | 所有檢討表 spoke skill 的建表流程 | **MCP ≥ 0.7.1** | `create_project_table_template` 不接受 `merges` / `equal_col` / 框線參數，必須退回「先 create 再 modify 補」的舊兩步流程 |
 | 版本回報本身 | MCP ≥ 0.8.0、外掛 ≥ 0.0.11 | 問不到版本，只能靠使用者跑 `verify-mcp-install.ps1` 回報 |
-| 自訂面積項目檢討表（`table-custom-area`）的基本流程 | **MCP ≥ 0.11.0**（另需訂閱含「自訂面積項目檢討」模組授權；試用方案不含） | 工具清單裡沒有 `get_project_custom_area_review`／`set_project_custom_area_review`，無法建檢討項目與匯入區域——停手請使用者重跑安裝檔；授權不足時工具回 `error_code="feature_not_licensed"`，請使用者聯絡 BIMTeki 客服 |
+| 自訂面積項目檢討（`custom-area-review`）的基本流程 | **MCP ≥ 0.11.0**（另需訂閱含「自訂面積項目檢討」模組授權；試用方案不含） | 工具清單裡沒有 `get_project_custom_area_review`／`set_project_custom_area_review`，無法建檢討項目與匯入區域——停手請使用者重跑安裝檔；授權不足時工具回 `error_code="feature_not_licensed"`，請使用者聯絡 BIMTeki 客服 |
 | ↳ 其中的**區域組合**（`create_group`／`rename_group`／`delete_group`／`add_zones_to_group`／`remove_zones_from_group`） | **MCP ≥ 0.12.0** | `set_project_custom_area_review` 的說明裡沒有 `create_group`——多顆填充構成同一個量時只能退回表格內 `{=a+b+c}` 湊合計，要跟使用者說明這是版本限制而非設計 |
+| 儲存格**判斷式** `{?條件\|成立時\|不成立時}`（符合／不符合等結論由外掛依數值自動判定） | **外掛 ≥ 0.0.23**（MCP 版本不限，字串原樣轉送給外掛） | 舊版外掛把 `{?…}` 當純文字原樣顯示——退回「結論不寫死、只寫左式數值」的做法，並跟使用者說明這是外掛版本限制 |
+| 綠化面積檢討表（以 `custom-area-review` 的土管綠化案例建）新流程：區域組合的計算式 token（`get_project_custom_area_review` 的 `groups[].formulaToken`／`formulaWithZoneNameToken`）；舊的綠化檢討工具、`get/set_project_green_info` 與 autotext `green` 分類已移除 | **外掛 ≥ 0.0.23、MCP ≥ 0.13.0**（另需自訂面積項目檢討模組授權） | 工具清單裡還有 `get_project_green_info` ＝ 外掛太舊；`groups[]` 沒有 `formulaToken` ＝ MCP 太舊——停手請使用者重跑安裝檔並完全重開 Claude，**不要**退回舊的綠化工具流程（新版 skill 已沒有那條路） |
 
 > 注意 MCP 工具的**參數本來就是自我描述的**：舊版 MCP 不會把 `merges` 放進 schema，
 > 所以你不會「送了一個不存在的參數」。真正的風險是——skill 叫你帶 `merges`、

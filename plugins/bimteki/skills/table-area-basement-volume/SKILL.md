@@ -1,6 +1,6 @@
 ---
-name: table-basement-volume
-description: 在 BIMTeki 專案中生成「地下層容積檢討」表格（俗稱地下層免計容積檢討／地下層停車空間容積檢討，建照圖說 A0-11）。當使用者說「做地下層容積檢討表 / 地下室容積檢討表 / 地下層停車空間容積檢討 / basement volume review table」，或由 `table` skill 帶 `basement` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。全案只有一張表（不分棟），上半用陣列自動文字「地下層停車清單」放置時逐樓層展開，其後為小計、防空避難、可扣容積總計與最終檢討列，值一律綁 autotext。欄位組成、腳本與 MCP 呼叫順序見本文。地上層容積、屋突、面積總表另有專屬 skill，不要用本 skill 代替。
+name: table-area-basement-volume
+description: 在 BIMTeki 專案中生成「地下層容積檢討」表格（俗稱地下層免計容積檢討／地下層停車空間容積檢討）。當使用者說「做地下層容積檢討表 / 地下室容積檢討表 / 地下層停車空間容積檢討 / basement volume review table」，或由 `table-area` skill 帶 `basement` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。全案只有一張表（不分棟），上半用陣列自動文字「地下層停車清單」放置時逐樓層展開，其後為小計、防空避難、可扣容積總計與最終檢討列，值一律綁 autotext。欄位組成、腳本與 MCP 呼叫順序見本文。地上層容積、屋突、面積總表另有專屬 skill，不要用本 skill 代替。
 ---
 
 # BIMTeki 地下層容積檢討表生成
@@ -19,17 +19,15 @@ description: 在 BIMTeki 專案中生成「地下層容積檢討」表格（俗�
 
 ## 前置檢查
 
-1. `bimteki:check_connection`。多開時先 `bimteki:list_archicad_instances` 讓使用者確認要操作哪個
-   專案，再 `bimteki:set_active_archicad_instance` 選定，或每次呼叫帶 `target_port`。
-   **版本關卡**：`check_connection` 回傳最後一行「版本：」要看過（**沒有這行代表 MCP 早於 0.8.0，照常往下走、不要擋**）——使用者的 MCP／外掛
-   是隨安裝檔更新的，跟本 skill 常常不同期。需求版本與版本不足時的處理方式見
-   `../table/references/mcp-compat.md`；版本不夠就停手請使用者重跑安裝檔，
-   不要改用舊流程默默把表建出來（使用者會拿到一張跟預期不同的表卻不知道為什麼）。
-2. `bimteki:get_project_status`（唯讀、成本低）確認專案狀態：`finalized`（已定案）與
-   `project_file.hasFile`（false＝專案只在記憶體中、變更無法落地，請使用者先另存新檔）。
-   回報未開啟 BIMTeki 專案就詢問路徑並用 `bimteki:open_bimteki_project` 開啟後重試。
-3. 動手前先讓使用者知道：即將建一張「地下層容積檢討」表、預設欄位、以及會寫入專案並存檔。
-   若使用者在 Archicad 開著表格編輯器等「模態視窗」，MCP 會回報 modal dialog 錯誤——請他關掉再繼續。
+標準順序與細節見 `../table/references/spoke-conventions.md` 第 1 節，摘要：
+
+1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `../table/references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
+2. `bimteki:get_project_status`：`finalized`／`project_file.hasFile`／`has_unsaved_changes`；未開啟專案就問路徑後 `bimteki:open_bimteki_project` 再重試。
+3. **容積區域已匯入**（共用規範第 1 節第 4 步）：`bimteki:get_bimteki_zone_map` 的 `counts.void` 為 0，或 `bimteki:get_project_stories` 的 `blocks[].stories` 沒有該建的樓層，就停手請使用者先自行在 Archicad 繪製容積區域並匯入 BIMTeki；不代畫、不呼叫建立區域的工具、不建表。
+4. 動手前告知即將建立的樣板名稱（預設「地下層容積檢討」）與判斷結果，這是寫入專案並存檔的操作；使用者開著表格編輯器等模態視窗時請他先關掉。
+
+本表另外：
+- 告知時要列出：即將建一張「地下層容積檢討」表與預設欄位。
 
 ## 這張表能不能做／要不要做
 
@@ -81,6 +79,8 @@ description: 在 BIMTeki 專案中生成「地下層容積檢討」表格（俗�
 
 ## 產生儲存格並建表
 
+共通眉角見 `../table/references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
+
 1. 組 `scripts/build_basement_table.py` 的 config JSON：
    ```json
    {
@@ -91,21 +91,12 @@ description: 在 BIMTeki 專案中生成「地下層容積檢討」表格（俗�
    }
    ```
    執行取得 `{cells, merges, column_widths, cols, rows}`。欄位說明見 `references/table-structure.md`。
-2. `bimteki:create_project_table_template(cells=..., merges=..., equal_col=[0,0])`。
-   v0.7.1 起 create 已支援 `merges` / `equal_col` / `right_line` / `bottom_line` / `left_line` /
-   `top_line`，**合併與等寬一併在此帶齊，不必先建再補**。**實測**：create 也能吃
-   `is_array_autotext_root` ＋ `originaldata`、`segments`、混合文字。合併只能用 `merges` 參數——
-   寫在 cell 上的 `rowspan`/`colspan` 建立時仍會被忽略。取回傳 `nodeGuid`。
+2. `bimteki:create_project_table_template(cells=..., merges=..., equal_col=[0,0])`，合併與等寬一併在此帶齊。
+   **實測**：create 也能吃 `is_array_autotext_root` ＋ `originaldata`、`segments`、混合文字。取回傳 `nodeGuid`。
 3. `bimteki:modify_project_table_template(template_guid=新guid, template_name="地下層容積檢討",
    column_widths=..., table_type="normal")` 補上 create 收不到的樣板層級屬性（樣板名、欄寬、類型）。
    同名已存在時加日期後綴。
-   - **等寬**：新建表格預設會把欄位設成強制等寬（讀回 `equalCol` 變 [0,N]），蓋掉 `column_widths`。
-     步驟 2 已帶 `equal_col=[0,0]`；若步驟 4 讀回仍是 [0,N]，在此補傳一次
-     **非空的單欄群組 `equal_col=[0,0]`**（僅第 0 欄自成群組＝欄間不再等寬）。
-     **舊版實測：傳 `equal_col=[]`（空陣列）不會生效**（被當成「未提供」）→ 一律用 `[0,0]`，別傳空陣列。
-   - **團隊協作要注意**：modify 前會先整批保留所有已放置的表格；若有表格被其他使用者保留，會回傳
-     錯誤與 `lockedTables`（含 templateName／windowTitle／owner）**且不做任何修改**。把清單轉告
-     使用者，請持有者釋放後再重試，不要反覆重送。
+   - **等寬**：步驟 2 已帶 `equal_col=[0,0]`；若步驟 4 讀回仍是 `[0,N]`，在此補傳一次 `equal_col=[0,0]`（別傳空陣列）。
 4. **驗證**：`bimteki:get_project_table_templates(template_guid=新guid)` 讀回，核對：
    - 陣列根那格仍有 `is_array_autotext_root:true`，`originaldata` 是完整 `ARRAY_AUTOTEXT_V1:{...}`
      且 `columnSettings` 欄位/順序正確。
@@ -119,8 +110,7 @@ description: 在 BIMTeki 專案中生成「地下層容積檢討」表格（俗�
 
 ## 注意事項
 
-- 本 skill 會**新建樣板並存檔**。動手前讓使用者確認欄位與命名；刪除舊樣板
-  （`manage_project_table_templates` 的 delete）必須先取得使用者明確同意。
+- 動手前讓使用者確認欄位與命名。
 - **每張表只允許一個陣列自動文字**（MCP 限制）。本表只用一個（停車清單），勿再加第二個陣列。
 - 陣列根固定放在**欄頭列的下一列、col0**；同列其餘欄位放空白佔位格（定義初始欄寬）。放置時陣列
   往下展開、把小計/檢討各列往下推——所以小計列要緊接在陣列根列之後，展開後才會正好接在清單下方。

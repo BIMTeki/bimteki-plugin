@@ -12,7 +12,7 @@
       "displayName": "BIMTeki 建照檢討",
       "source": "./plugins/bimteki",
       "description": "在 Archicad 中自動產生建照圖說的各式檢討表（面積總表、容積檢討、建蔽率、綠化、無障礙、土管、建照審查）、繪製容積區域、回填專案資訊。需搭配 BIMTeki Studio 外掛與 BIMTeki MCP 使用。",
-      "version": "3.0.0",
+      "version": "4.0.0",
       "author": {
         "name": "BIMTeki",
         "email": "office@arkiteki.com"

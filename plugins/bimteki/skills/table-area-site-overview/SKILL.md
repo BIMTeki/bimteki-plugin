@@ -1,13 +1,13 @@
 ---
-name: table-site-overview
-description: 在 BIMTeki 專案中生成「基地概要」表格（TableTemplate 表格樣板，俗稱基地資訊表／建蔽容積規定值vs設計小表，建照圖說 A0-01）。當使用者說「做基地概要表 / 建立基地資訊表 / 做建蔽容積規定值與設計值對照表 / site overview table」，或由 `table` skill 帶 `site` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。兩欄式，左欄為固定項目標籤（地號、使用分區、層棟戶數、基地面積、動態退縮扣除列、建蔽容積規定值與設計值、工程造價、7 項法規檢討），右欄優先綁「算式：」複合 autotext。完整列組成、造價寫回流程與 MCP 呼叫順序見本文。建蔽率檢討表、面積總表另有專屬 skill，不要用本 skill 代替。
+name: table-area-site-overview
+description: 在 BIMTeki 專案中生成「基地概要」表格（TableTemplate 表格樣板，俗稱基地資訊表／建蔽容積規定值vs設計小表）。當使用者說「做基地概要表 / 建立基地資訊表 / 做建蔽容積規定值與設計值對照表 / site overview table」，或由 `table-area` skill 帶 `site` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。兩欄式，左欄為固定項目標籤（地號、使用分區、層棟戶數、基地面積、動態退縮扣除列、建蔽容積規定值與設計值、工程造價、7 項法規檢討），右欄優先綁「算式：」複合 autotext。完整列組成、造價寫回流程與 MCP 呼叫順序見本文。建蔽率檢討表、面積總表另有專屬 skill，不要用本 skill 代替。
 ---
 
 # BIMTeki 基地概要表生成
 
-在目前開啟的 BIMTeki 專案中，建立一份兩欄式「基地概要」表格樣板。這張表把基地與建築物的核心規模指標（地號、分區、起造人、棟戶數、基地與退縮面積、建蔽率與容積率的規定值/設計值、各類樓地板面積、工程造價）加上常見的 7 項法規檢討，濃縮成一張速覽表——通常放在建照圖說首頁（A0-01）。
+在目前開啟的 BIMTeki 專案中，建立一份兩欄式「基地概要」表格樣板。這張表把基地與建築物的核心規模指標（地號、分區、起造人、棟戶數、基地與退縮面積、建蔽率與容積率的規定值/設計值、各類樓地板面積、工程造價）加上常見的 7 項法規檢討，濃縮成一張速覽表——通常放在建照圖說首頁。
 
-左欄是固定的項目標籤（逐一列出，不省略、不合併），右欄「內容」依本案填寫。與 `table-permit`、`table-accessibility` 不同的是：本表右欄有不少是「數值計算式」（例如 `225.18×0.6=135.11m²`），而不是整段法規文字；這類算式**優先找 BIMTeki 已經算好的複合 token（同時含公式與結果，例如 `table-area-summary` 已驗證過的「計算式：設計容積樓地板面積計算式」），沒有複合 token 才用多個數值 token 加文字運算符號自己組**——絕不手算後把數字寫死，因為那樣專案數值變動時表格不會跟著更新。
+左欄是固定的項目標籤（逐一列出，不省略、不合併），右欄「內容」依本案填寫。與 `table-code-permit`、`table-code-accessibility` 不同的是：本表右欄有不少是「數值計算式」（例如 `225.18×0.6=135.11m²`），而不是整段法規文字；這類算式**優先找 BIMTeki 已經算好的複合 token（同時含公式與結果，例如 `table-area-summary` 已驗證過的「計算式：設計容積樓地板面積計算式」），沒有複合 token 才用多個數值 token 加文字運算符號自己組**——絕不手算後把數字寫死，因為那樣專案數值變動時表格不會跟著更新。
 
 每一列的固定標籤、對應的 autotext 比對關鍵字、算式組法與法規檢討的門檻判斷邏輯，**以 `references/items.md` 為準**；本檔描述整體流程。
 
@@ -15,19 +15,18 @@ description: 在 BIMTeki 專案中生成「基地概要」表格（TableTemplate
 
 ## 前置檢查
 
-1. 呼叫 `bimteki:check_connection` 確認與 Archicad / BIMTeki Studio 的連線。
-   **版本關卡**：`check_connection` 回傳最後一行「版本：」要看過（**沒有這行代表 MCP 早於 0.8.0，照常往下走、不要擋**）——使用者的 MCP／外掛
-   是隨安裝檔更新的，跟本 skill 常常不同期。需求版本與版本不足時的處理方式見
-   `../table/references/mcp-compat.md`；版本不夠就停手請使用者重跑安裝檔，
-   不要改用舊流程默默把表建出來（使用者會拿到一張跟預期不同的表卻不知道為什麼）。
-2. 呼叫 `bimteki:get_project_status`（唯讀、成本低）確認專案狀態：`finalized`（已定案，之後若要寫回工程造價單價會被拒絕）、`project_file.hasFile`（false＝專案只在記憶體中、變更無法落地，請使用者先另存新檔）。若回報未開啟 BIMTeki 專案，詢問使用者專案路徑後，用 `bimteki:open_bimteki_project` 協助開啟，再重試。
-3. 動手前先讓使用者知道即將建立的樣板名稱（預設「基地概要」），這是寫入專案的操作。
+標準順序與細節見 `../table/references/spoke-conventions.md` 第 1 節，摘要：
+
+1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `../table/references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
+2. `bimteki:get_project_status`：`finalized`（已定案，之後寫回工程造價單價會被拒絕）／`project_file.hasFile`／`has_unsaved_changes`；未開啟專案就問路徑後 `bimteki:open_bimteki_project` 再重試。
+3. **建蔽區域已匯入**（共用規範第 1 節第 4 步）：`bimteki:get_bimteki_zone_map` 的 `counts.arch` 為 0 就停手請使用者先自行在 Archicad 繪製建築面積區域並匯入 BIMTeki；不代畫、不呼叫建立區域的工具、不建表。
+4. 動手前告知即將建立的樣板名稱（預設「基地概要」）與判斷結果，這是寫入專案並存檔的操作；使用者開著表格編輯器等模態視窗時請他先關掉。
 
 ## 蒐集專案資訊
 
 呼叫 `bimteki:get_project_core_snapshot`，讀取本案基本事實，作為判斷各列該填實際值、算式或樣板句的依據。至少關注：使用分區、基地面積、道路退縮面積、建蔽率/容積率的規定值與設計值、棟數/層數（地上/地下/屋突）/戶數、總樓地板面積、容積樓地板面積、車位數。
 
-再依需要補讀專屬唯讀工具：**層棟戶數**（各棟各層戶數／樓高／用途）→ `bimteki:get_project_stories`；**車位數**（法定／實設汽機車、自行車）→ `bimteki:get_project_parking_info`；**綠化**→ `bimteki:get_project_green_info`；**自訂義參數**→ `bimteki:get_project_custom_params`（直接給 `fieldKey`＝`CustomParam.{項目名}`，比掃 catalog 準）。
+再依需要補讀專屬唯讀工具：**層棟戶數**（各棟各層戶數／樓高／用途）→ `bimteki:get_project_stories`；**車位數**（法定／實設汽機車、自行車）→ `bimteki:get_project_parking_info`；**綠化面積**→ `bimteki:get_project_custom_area_review`（項目「綠化面積檢討」的組合）；**自訂義參數**→ `bimteki:get_project_custom_params`（直接給 `fieldKey`＝`CustomParam.{項目名}`，比掃 catalog 準）。
 
 **實際欄位以工具回傳為準**；讀不到的項目就退回佔位符，不要硬湊。若使用者先前已用 `project-info-fill` 補過起造人、地號等自訂義參數，這些也會在專案資訊裡，記得一併檢查（以 `CustomParam.欄位名` 形式出現）。
 
@@ -60,7 +59,7 @@ description: 在 BIMTeki 專案中生成「基地概要」表格（TableTemplate
 依 `references/items.md`，組出 1 列標題 + 26 列固定內容 + **退縮／扣除列 0~6 列** + **「使用面積(建蔽率用)」1 列（只在有任一扣除項>0 時才放，緊接在「其它面積(使用面積)」之後，綁 `計算式：使用面積(建蔽率用)總計計算式`，渲染如 `93.00-1.38-14.34=77.28m²`）**。列數依本案動態；扣除項面積 > 0 才插入該列，騎樓地另需「建蔽率計算時騎樓地從基地母數扣除」設定為真。插入 N 列就把其後所有列的 row 索引整體位移，`merges` 一併調整。每列：
 
 - **左欄（col 0）**：固定項目標籤，逐字照抄（如「基地地號」「道路退縮地」「其它面積(使用面積)」），不要改寫用詞。
-- **右欄（col 1）**：依上一節的優先序組出 segments。數值列盡量單行（`newline: 1`）；法規檢討列句子較長，用 `newline: 2`（依中文換行）。
+- **右欄（col 1）**：依上一節的優先序組出 segments。數值列盡量單行（`newline: 1`）；法規檢討列句子較長，用 `newline: 2`（中文標點換行）。
 
 佔位符慣例（方便事後尋找取代）：文號 `◯◯◯字第◯◯◯◯◯號`、日期 `○○○年○○月○○日`、圖號 `A0-○` / `A6-○`、單價 `每平方公尺◯◯◯元（依當年度主管機關公告造價標準）`。工程造價三列若操作數缺 autotext，結果留 `◯◯◯元（請依左式數值計算後填入）`，不要自己算出一個數字填進去。
 
@@ -68,23 +67,14 @@ description: 在 BIMTeki 專案中生成「基地概要」表格（TableTemplate
 
 ## 建表流程
 
-沿用 BIMTeki 表格樣板的已知眉角（與其他兩欄表相同）：
+共通眉角見 `../table/references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
 
 1. **組 cells**：
    - Row 0：col 0 留空（不放文字，僅作左上角空格）；col 1 放大標題「基地概要」，`textbold: true`、`textsize: 1`、`alignment: 2`（置中）、`newline: 1`。
-   - Row 1~27：col 0 標籤與 col 1 內容皆 `alignment: 1`（靠左）；數值列 `newline: 1`（直接換行），法規檢討長句列 `newline: 2`（依中文換行）。
-2. 呼叫 `bimteki:create_project_table_template` 一次送入所有 cells，**並同時帶 `equal_col=[0,0]`**（v0.7.1 起 create 已支援 `merges` / `equal_col` / 框線參數）。**注意**：
-   - **`equal_col=[0,0]`**：新建表格預設 `equalCol=[0,1]`（兩欄等寬），而本表標籤欄應明顯窄於內容欄，故用非空的單欄退化區間 `[0,0]`（等寬群組只含第 0 欄＝欄間不再等寬）解除，`column_widths` 的比例才會生效。
-   - 合併只能用 `merges` 參數（本表其實用不到合併，因為標題只佔 col 1、內容都是單一儲存格，不像其他表需要標題跨欄）；寫在 cell 上的 `rowspan` / `colspan` 建立時仍會被忽略。
-   - create 對未指定 `newline`/`charwidth` 的格，`charwidth` **預設為 1（縮減字寬）**；因此每一格都要明確給 `newline`（本表全部用 newline，不使用 charwidth 縮減），否則內容格會被非預期地縮減字寬。
-3. 從回傳取得新樣板 guid，呼叫 `bimteki:modify_project_table_template` 補上 create 收不到的樣板層級屬性：
-   - `template_name`：預設「基地概要」；若同名樣板已存在，加日期後綴避免混淆。
-   - `column_widths`：長度 2，起始 `[220, 680]`（標籤欄窄、內容欄寬，對照參考圖比例）。**注意：column_widths 只影響「編輯器顯示」，不影響放置到圖面後的 GDL 表格欄寬。**
-   - 步驟 4 讀回若發現 `equalCol` 仍是 `[0,1]`，在此補傳一次 `equal_col=[0,0]`。**舊版實測：傳 `equal_col=[]`（空陣列）不會生效**（被當成「未提供」）→ 一律用非空的 `[0,0]`，不要傳空陣列。若放置後仍不理想，告知使用者手動調整欄寬。
-   - **團隊協作要注意**：modify 前會先整批保留所有已放置的表格；若有表格被其他使用者保留，會回傳錯誤與 `lockedTables`（含 templateName／windowTitle／owner）**且不做任何修改** → 把清單轉告使用者，請持有者釋放後再重試。
-   - 若 create 階段有格式沒生效，一併在此以 `cells` patch 修正（只帶 row/col 與要改的格式欄位，內容會保留）。
+   - Row 1~27：col 0 標籤與 col 1 內容皆 `alignment: 1`（靠左）；數值列 `newline: 1`，法規檢討長句列 `newline: 2`（中文標點換行）。本表全部用 `newline`、不用 `charwidth` 縮減，每格都要明確給。
+2. `bimteki:create_project_table_template` 一次送入所有 cells，**並同時帶 `equal_col=[0,0]`**：新建表格預設 `equalCol=[0,1]`（兩欄等寬），而本表標籤欄應明顯窄於內容欄，用非空的單欄退化區間 `[0,0]` 解除，`column_widths` 的比例才會生效。本表用不到 `merges`（標題只佔 col 1、內容都是單一儲存格）。
+3. `bimteki:modify_project_table_template` 補上：`template_name`（預設「基地概要」，同名加日期後綴）、`column_widths=[220, 680]`（標籤欄窄、內容欄寬，對照參考圖比例；只影響編輯器顯示）。步驟 4 讀回若 `equalCol` 仍是 `[0,1]`，在此補傳 `equal_col=[0,0]`（別傳空陣列）；放置後仍不理想，告知使用者手動調整欄寬。
 4. **驗證**：用 `bimteki:get_project_table_templates(template_guid=新guid)` 讀回，逐項核對：列數（標題 1 ＋ 固定 26 ＋ 退縮／扣除列 N ＋ N≥1 時的使用面積(建蔽率用) 1 列，**不要死記 28 列**）、退縮／扣除列只出現面積 > 0 者且順序正確、「其它面積(使用面積)」與「使用面積(建蔽率用)」兩列分別綁到**未扣除版／已扣除版**的 token（display 只差「(建蔽率用)」五個字，最容易綁反）、左欄標籤文字正確、右欄該綁 autotext 的格是否含正確 token（複合算式 token 只應出現一次、不要被拆成多段；總樓地板面積應綁 `計算式：總樓地板面積` 而非純數值版）、欄寬設定。有出入用 modify 修正後再讀回。
-   - 已知現象：剛建立的樣板 `statedata` 會顯示原始 token 字串，這是尚未評估的正常狀態，放到圖面後才會解析成實際值；核對以 `originaldata` 是否含正確 token 為準。
 5. **回報**：向使用者簡短說明——樣板名稱、哪些列用了 autotext（尤其標出用了複合算式 token 的列）、哪些列退回樣板句、**哪些格留了佔位符（列成「待手填清單」逐項標明第幾列要補什麼，特別是工程造價的單價與地質敏感區等外部資訊）**、法規檢討 7 列的門檻判斷結果請使用者複核，並提醒可在 BIMTeki 表格管理器放置到圖面。
 
 ## 儲存格寫法
@@ -124,7 +114,7 @@ description: 在 BIMTeki 專案中生成「基地概要」表格（TableTemplate
    ]}
   ```
 - **含佔位符**：`{"segments": [{"type": "text", "value": "起造人：◯◯◯建設有限公司 負責人：◯◯◯"}]}`（若專案資訊/自訂義參數已有起造人資料則優先帶入，找不到才用佔位符）。
-- **格式欄位**：`textbold`(粗體，僅標題)、`newline`(0 不換行／1 直接換行／2 依中文換行)、`alignment`(1 靠左／2 置中，僅標題)、`textsize`(1 大，僅標題／2 一般)。本表不使用 `charwidth` 縮減字寬（每格都明確給 `newline` 以避免預設縮減字寬生效）。
+- **格式欄位**的值域與預設見 `../table/references/spoke-conventions.md` 第 5 節；本表：`textbold`／`textsize: 1`／`alignment: 2` 僅標題，其餘全用 `newline`（1 或 2）、不用 `charwidth` 縮減。
 - 本表所有內容皆屬專案層級 autotext，儲存格不需帶 `storyGuid`。
 
 ## 注意事項
@@ -132,5 +122,3 @@ description: 在 BIMTeki 專案中生成「基地概要」表格（TableTemplate
 - **不可捏造**：地號、起造人、地質敏感區函號、核准圖號等外部或行政公告資訊，BIMTeki 無法得知，一律留佔位符（工程造價單價同屬外部資訊，但可依上面的流程問過使用者後寫回專案，不必永遠留佔位符），寧可留白讓使用者補，也不要編造看似合理的數字或文號。
 - **算式優先找複合 token，其次自組，絕不手算寫死**：即使當下能從專案資訊讀到數字算出結果，也不要把算出來的數字直接寫進儲存格——那樣專案改動後表格不會跟著更新，違背 autotext 的意義。
 - **法規檢討 7 列是門檻判斷後的常見結論（多為「免設置／OK」），非絕對正確**：例如停車位免設門檻（500m²）、無障礙免設門檻（10戶）、地質鑽探門檻（600m²建築面積）、雨水滯洪門檻（300m²基地面積）等，BIMTeki 給的是依讀到數值判斷的結果，回報時務必提醒使用者依本案實際法規（含地方自治條例，可能與圖中範例的台中市規定不同）複核，不符合就請使用者修改。
-- 新建樣板會寫入專案並存檔，屬可逆性低的操作；若要刪除舊樣板（`manage_project_table_templates` 的 delete）必須先取得使用者明確同意。
-- 一次組好完整 cells（含依本案判定後的退縮／扣除列）再送出 create，不要分多次產生殘缺樣板；create 失敗，修正後重試前先確認沒有留下半成品樣板。

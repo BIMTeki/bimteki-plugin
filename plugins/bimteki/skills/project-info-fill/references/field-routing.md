@@ -81,16 +81,15 @@
 | 各棟各層戶數／樓高／用途 | `set_story_attributes` | `stories`：每筆 `{storyGuid, familyCount, floorHeight, purpose}`，至少給三者其一 | `storyGuid` 取自 `get_project_stories`。**該欄位 `isCustom` 為 true 才寫得進去**，否則重算會壓回 `original`；總計層的樓高／用途永遠不可寫。**`floorHeight` 單位是公分**（320＝3.2 公尺）。樓層骨架（名稱／夾層／排序）無工具可改 |
 | 法定汽／機／自行車位數 | `set_legal_parking_counts` | `legal_car_count` / `legal_motorcycle_count` / `legal_bicycle_count` | partial update。**`-1`＝清除（顯示「－」）、`0`＝檢討結論為免設**，意義不同別搞混 |
 | 停車檢討的設定與敘述 | `set_project_parking_review` | `law_type`（`"building_code"`／`"land_use_control"`）、`category_type`（`"single"`／`"multi"`）、`custom_law_content`、`result_content`、`is_detail_setting`、`auto_fill_legal_counts` | 實設位數與地下層逐層明細由停車區域推導，**不可寫** |
-| 綠化基準／比率／喬木 | `set_project_green_info` | `base_type`（`"true_empty"`／`"law_empty"`）、`green_percentage`、`tree_unit`（≥1）、`tree_count`、`area_source` | 可寫的只有這五項；規定值依本案土管。各項面積與檢討式由綠化區域推導，不可寫 |
 | 棟別／戶別清單 | `set_bimteki_block_unit_settings` | `blocks`／`units` 各可含 `add`／`rename`／`delete` | 棟別增刪僅限多棟案型；改名／刪除會連動遷移既有區域與樓梯座綁定 |
 
-對應的讀取工具：`get_project_core_snapshot`（土地與扣除項）、`get_project_stories`、`get_project_parking_info`、`get_project_green_info`、`get_bimteki_block_unit_settings`。**寫入前一律先讀現況做 read-modify-write。**
+對應的讀取工具：`get_project_core_snapshot`（土地與扣除項）、`get_project_stories`、`get_project_parking_info`、`get_bimteki_block_unit_settings`。**寫入前一律先讀現況做 read-modify-write。**
 
 ---
 
 ## B-2. 純計算結果與刻意不開放（**不可寫，寫了整批退回**）
 
-- **純計算結果**（由模型／區域／上面那些輸入推導）：基地面積、使用面積、棟數、樓層數、開挖面積，整個 `land` 的基準/設計建蔽率、容積率、允建容積樓地板面積，工程造價的三個「金額」，停車實設位數與地下層明細，綠化各項面積與檢討式。→ 要改請改**輸入**或改**模型/區域**。
+- **純計算結果**（由模型／區域／上面那些輸入推導）：基地面積、使用面積、棟數、樓層數、開挖面積，整個 `land` 的基準/設計建蔽率、容積率、允建容積樓地板面積，工程造價的三個「金額」，停車實設位數與地下層明細，綠化面積（由「自訂面積項目檢討」項目「綠化面積檢討」的區域組合推導）。→ 要改請改**輸入**或改**模型/區域**。
 - **刻意不開放**：`building.case_type`／`block_mode`／`shared_hall`（改案型會重塑整個檢討結構）、`review_settings.auto_renew_zone`。→ 請使用者自己在面板決定。
 - 使用分區（`site.zone`）由土地地號資料推導 → 改地號用 `set_project_land_info`。
 
@@ -131,6 +130,17 @@
 | 建照審查資料 | `畸零地基地寬度` | （逐字，抓不到留空） | 建照審查第19項 |
 | 建照審查資料 | `畸零地基地深度` | （逐字，抓不到留空） | 建照審查第19項 |
 | 建照審查資料 | `畸零地檢討圖號` | `A0-◯` | 建照審查第19項 |
+
+**綠化規定值的固定命名**（綠化面積檢討表的公式與外掛的舊檔轉換都綁這幾個名字，一律照用、不要改名）：
+
+| 分類 category | 項目 name | 內容 content 寫法 | 供哪張表用 |
+|---|---|---|---|
+| 綠化面積檢討 | `綠化比率` | `50%`（帶 % 號，公式代入自動 ÷100） | 綠化面積檢討表 |
+| 綠化面積檢討 | `喬木檢討基準` | `64`（每滿多少 m² 植喬木一株，純數字） | 綠化面積檢討表 |
+| 綠化面積檢討 | `實設喬木數量` | `3`（純數字，不帶「棵」） | 綠化面積檢討表 |
+| 綠化面積檢討 | `檢討基數` | `實設空地` 或 `法定空地`（純標籤） | 綠化面積檢討表 |
+
+綠化面積本身不是參數：由「自訂面積項目檢討」項目「綠化面積檢討」的組合「實設綠化面積」「無法綠化面積」推導，要改請改區域（見 `custom-area-review` 的土管綠化案例）。
 
 **沒有對應既有項目時**才新增；新增時沿用同一套風格（優先放「建照審查資料」等既有分類，項目名用「◯◯判定／◯◯函／◯◯圖號」句式）。其他常見需求若專案尚無項目，可參考：`都市計畫發布文號`、`都市計畫發布日期`、`細部計畫名稱`、`整體性防火間隔判定`、`排水污水放流函`、`宜居回饋金`、`法定建蔽率`／`法定容積率`（後兩者為外部依據，非 BIMTeki 計算值，回報時註明）。
 

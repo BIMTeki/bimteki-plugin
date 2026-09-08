@@ -1,6 +1,6 @@
 ---
-name: table-per-floor-volume
-description: 在 BIMTeki 專案中生成「各層容積檢討」表格（每一地上樓層一張 TableTemplate 表格樣板，俗稱 XX層容積檢討，建照圖說 A0-12~14）。當使用者說「做各層容積檢討表 / 建立地上層容積檢討 / 產生每層容積檢討 / per-floor volume review table」，或由 `table` skill 帶 `volume` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。三欄式，分「當層樓地板面積(A)／免計容積(B)／回計容積(C)／(A)-(B)+(C)」四段，值欄全綁 storyArea「算式：」autotext。案型分支（單棟／一般多棟／連棟透天）、夾層合併版面、0 值列取捨與腳本用法見本文。屋突層與地下層另有專屬 skill，不要用本 skill 代替。
+name: table-area-per-floor-volume
+description: 在 BIMTeki 專案中生成「各層容積檢討」表格（每一地上樓層一張 TableTemplate 表格樣板，俗稱 XX層容積檢討）。當使用者說「做各層容積檢討表 / 建立地上層容積檢討 / 產生每層容積檢討 / per-floor volume review table」，或由 `table-area` skill 帶 `volume` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。三欄式，分「當層樓地板面積(A)／免計容積(B)／回計容積(C)／(A)-(B)+(C)」四段，值欄全綁 storyArea「算式：」autotext。案型分支（單棟／一般多棟／連棟透天）、夾層合併版面、0 值列取捨與腳本用法見本文。屋突層與地下層另有專屬 skill，不要用本 skill 代替。
 ---
 
 # BIMTeki 各層容積檢討表生成
@@ -16,19 +16,15 @@ description: 在 BIMTeki 專案中生成「各層容積檢討」表格（每一�
 
 ## 前置檢查
 
-1. `bimteki:check_connection`。多開時會要求選 instance：先 `bimteki:list_archicad_instances`
-   讓使用者確認要操作哪個專案，再 `bimteki:set_active_archicad_instance` 選定，或每次呼叫帶
-   `target_port`。
-   **版本關卡**：`check_connection` 回傳最後一行「版本：」要看過（**沒有這行代表 MCP 早於 0.8.0，照常往下走、不要擋**）——使用者的 MCP／外掛
-   是隨安裝檔更新的，跟本 skill 常常不同期。需求版本與版本不足時的處理方式見
-   `../table/references/mcp-compat.md`；版本不夠就停手請使用者重跑安裝檔，
-   不要改用舊流程默默把表建出來（使用者會拿到一張跟預期不同的表卻不知道為什麼）。
-2. `bimteki:get_project_status`（唯讀、成本低）確認專案狀態：`finalized`（已定案）、
-   `project_file.hasFile`（false＝專案只在記憶體中、變更無法落地，請使用者先另存新檔）。
-   回報未開啟 BIMTeki 專案就詢問路徑並用 `bimteki:open_bimteki_project` 開啟後重試。
-3. 動手前先讓使用者知道：即將為哪些樓層各建一張表、判斷出的案型、以及會寫入專案並存檔。
-   注意：若使用者在 Archicad 開著表格編輯器等「模態視窗」，MCP 會回報 modal dialog 錯誤——
-   請他關掉該視窗再繼續。
+標準順序與細節見 `../table/references/spoke-conventions.md` 第 1 節，摘要：
+
+1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `../table/references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
+2. `bimteki:get_project_status`：`finalized`／`project_file.hasFile`／`has_unsaved_changes`；未開啟專案就問路徑後 `bimteki:open_bimteki_project` 再重試。
+3. **容積區域已匯入**（共用規範第 1 節第 4 步）：`bimteki:get_bimteki_zone_map` 的 `counts.void` 為 0，或 `bimteki:get_project_stories` 的 `blocks[].stories` 沒有該建的樓層，就停手請使用者先自行在 Archicad 繪製容積區域並匯入 BIMTeki；不代畫、不呼叫建立區域的工具、不建表。
+4. 動手前告知即將建立的樣板名稱（預設「地上X層容積檢討」）與判斷結果，這是寫入專案並存檔的操作；使用者開著表格編輯器等模態視窗時請他先關掉。
+
+本表另外：
+- 告知時要列出：即將為哪些樓層各建一張表、判斷出的案型。
 
 ## 判斷案型（決定組表方式）
 
@@ -70,7 +66,7 @@ mezz_single 或 5 欄 mezz），不能拿「這是單棟案」當理由跳過夾
 ## 決定要建的樓層
 
 - 只建**地上各層**（地上一層…地上N層，含夾層/小計等中間層）。
-- **屋突層不建**（另有 table-rooftop-area skill）。**地下層不建**（採地下層總量檢討時更不建；地下另有 6 欄式檢討表）。
+- **屋突層不建**（另有 table-area-rooftop skill）。**地下層不建**（採地下層總量檢討時更不建；地下另有 6 欄式檢討表）。
 - 單棟：取各地上層 story。一般多棟：取各「各棟總計地上X層」story，並另取各棟同層 story 供展開列用。
   連棟透天：把各棟同一層 story 分組（以樓層名稱去掉棟別前綴後相同者為同一層），每組一張多欄表。
 - **有夾層的地上層一律改用夾層(mezz)版面，與單棟/多棟案型無關**：只要存在配對的「…夾層」樓層
@@ -105,7 +101,7 @@ mezz_single 或 5 欄 mezz），不能拿「這是單棟案」當理由跳過夾
   梯廳10%檢討、陽台10%檢討、陽台+梯廳15%檢討」（這 5 項僅共用出現）。
 - **0 值過濾**：用 `bimteki:evaluate_story_autotext_values`（帶該樓層 story guid 與各項的**「面積：」**
   token/display）取數值，`|value|<0.005` 視為 0 者不放該列。
-  - B 段各項（機電設備、管道間、停車空間、騎樓、車道、防空避難室，共用另含梯廳）：面積>0 才放。
+  - B 段各項（安全梯和管委會空間、機電設備空間和管道間、停車空間、騎樓、車道、防空避難室，共用另含梯廳）：面積>0 才放。
   - C 段：10%/15%/梯廳10%/陽台10%/陽台+梯廳15% 需「共用且（陽台或梯廳面積>0）」才放；
     **工廠類建築時「陽台10%檢討」一律不放**（即使共用且陽台>0）；
     停車空間回計需停車空間>0；裝飾柱回計需其面積>0。
@@ -113,6 +109,8 @@ mezz_single 或 5 欄 mezz），不能拿「這是單棟案」當理由跳過夾
 - (A)-(B)+(C) 不做 0 值過濾；A 段除上述陽台過濾外，其餘列（室內面積、當層樓地板面積）一律保留。
 
 ## 產生儲存格並建表
+
+共通眉角見 `../table/references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
 
 1. 依上面結果組出 `scripts/build_volume_table.py` 的 config JSON（欄位說明見結構規格第六節）：
    - 單棟（無夾層）：`mode:"single"`、`story_guid`＝該層。
@@ -124,37 +122,30 @@ mezz_single 或 5 欄 mezz），不能拿「這是單棟案」當理由跳過夾
      subtotal_story=...}` → 5 欄 mezz 版面（見結構規格第四點五節）。
    - 連棟透天：`mode:"multiblock"`、`blocks:[{story_guid=該棟該層}...]`。
    執行取得 `{cells, merges, column_widths, cols, rows}`。
-2. `bimteki:create_project_table_template(cells=..., merges=...)`——v0.7.1 起 create 已支援
-   `merges` / `equal_col` / 框線參數，**合併直接在這一步帶進去**（每層一張表、張數多，省一次往返有感）。
-   合併只能用 `merges` 參數；寫在 cell 上的 `rowspan`/`colspan` 建立時仍會被忽略。每格已明確給
-   charwidth/newline，勿依賴預設。取回傳 `nodeGuid`。
+2. `bimteki:create_project_table_template(cells=..., merges=...)`——**合併直接在這一步帶進去**（每層一張表、張數多，
+   省一次往返有感；合併只能用 `merges`）。腳本已對每格明確給 charwidth/newline，勿依賴預設。取回傳 `nodeGuid`。
 3. `bimteki:modify_project_table_template(template_guid=新guid, template_name=...,
    column_widths=..., table_type="normal")` 補上 create 收不到的樣板名與欄寬（步驟 4 讀回發現
    `merges` 沒吃到才一併重送）。建議命名「地上X層容積檢討」，同名已存在加日期後綴。
-   - **團隊協作要注意**：modify 前會先整批保留所有已放置的表格；若有表格被其他使用者保留，會回傳
-     錯誤與 `lockedTables`（含 templateName／windowTitle／owner）**且不做任何修改** → 把清單轉告
-     使用者，請持有者釋放後再重試。一次要建很多張時尤其要留意，別在同一個錯誤上重跑整批。
+   - 團隊協作回傳 `lockedTables` 時整批未修改（處理見共用規範）；一次要建很多張時尤其要留意，別在同一個錯誤上重跑整批。
 4. **驗證**：`bimteki:get_project_table_templates(template_guid=新guid)` 讀回，核對欄列數、merges、
    每格 originaldata 是否為正確 token、各值格 storyGuid 是否為該樓層（多棟展開列為各棟該層、
    小計為各棟總計；連棟透天各欄為各棟該層）。
-   - **正常現象**：剛建立、未放置到圖面的樣板，`statedata` 會顯示原始 token 字串（尚未評估），
-     核對以 `originaldata` 為準；要看實際數值用 `bimteki:evaluate_story_autotext_values` 另行確認。
+   - 要看實際數值用 `bimteki:evaluate_story_autotext_values`（本表 token 都是 storyArea）另行確認；`statedata` 顯示原始 token 屬正常。
 
 ## 儲存格寫法要點（與 references/table-structure.md 一致）
 
 - 值格用 `segments`＋autotext token，並帶該樓層/該棟 `storyGuid` 與 `roomGuid`
   （固定常數 `4f8303bf-26fd-4a53-9fe7-2a7c13fdf3d3`，所有 BIMTeki 容積檢討表都用它；直接照抄）。
 - 全表 `alignment:1`（靠左）、`textbold:false`。區段標籤（col0）`charwidth:1`、`textsize:2`；
-  項目名（col1）`charwidth:0`；值格 `charwidth:0`、`newline:3`；標題列 `textsize:1`。
+  項目名（col1）`charwidth:0`；值格 `charwidth:0`、`newline:3`（直接換行）；標題列 `textsize:1`。格式值域見 `../table/references/spoke-conventions.md` 第 5 節。
 - 標題只用「樓層名稱」autotext＋「容積檢討」（實測樓層名 token 回傳「地上二層」不含棟別，標題乾淨）。
 - 區段標籤在 col0 用 `merges` 的 rowspan 涵蓋該段列數；(A)-(B)+(C) 只有 1 列不合併；標題列 colspan＝總欄數。
 - (A)-(B)+(C) 最終列的段標籤**依是否有 B/C 段動態組**：「(A)」為底，有 B 加「-(B)」、有 C 加「+(C)」（build 腳本已自動處理）。
 
 ## 注意事項
 
-- 本 skill 會**新建樣板並存檔**（可逆性低）；一次可能建很多張（每層一張），動手前先讓使用者確認
-  樓層範圍與案型。刪除舊樣板（`manage_project_table_templates` 的 delete）必須先取得使用者明確同意。
-- 逐張表完整組好再送 create，避免產生殘缺樣板；create 失敗先確認沒留半成品再重試。
+- 一次可能建很多張（每層一張），動手前先讓使用者確認樓層範圍與案型。
 - 若 `evaluate_story_autotext_values` 不可用，不要臆測數值：改為保留 A 段全部列與（非共用過濾後的）
   所有 B/C 項目，並在回報時說明「因數值取得失敗，本次未依 0 值移除項目」。
 - **已知踩過的坑**：曾經在單棟＋夾層案子（如「地上四層」配對「地上四層夾層」＋「地上四層小計」）

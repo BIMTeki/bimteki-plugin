@@ -1,6 +1,6 @@
 ---
-name: table-landuse
-description: 在 BIMTeki 專案中依使用者提供的「土地使用分區管制要點」（俗稱土管）生成「土管檢討表」（TableTemplate 表格樣板，建照圖說 A0-02）。當使用者說「製作土管表格 / 做土管檢討表 / 把這份土管做成檢討表 / land use zoning control review table」，或由 `table` skill 帶 `landuse` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。**需使用者提供土管文件（PDF 或文字檔），沒附就先請他提供再開工。** 三欄式逐條檢討（條文號碼／條文內容／檢討），條文逐字照抄，檢討欄能綁 autotext 者優先綁、無法從專案判斷者留空待人工填、絕不臆測。萃取要領與版面見本文。建照審查表另有專屬 skill，不要用本 skill 代替。
+name: table-code-landuse
+description: 在 BIMTeki 專案中依使用者提供的「土地使用分區管制要點」（俗稱土管）生成「土管檢討表」（TableTemplate 表格樣板）。當使用者說「製作土管表格 / 做土管檢討表 / 把這份土管做成檢討表 / land use zoning control review table」，或由 `table-code` skill 帶 `landuse` 參數路由進來時使用本 skill，即使沒有明講「skill」二字。**需使用者提供土管文件（PDF 或文字檔），沒附就先請他提供再開工。** 三欄式逐條檢討（條文號碼／條文內容／檢討），條文逐字照抄，檢討欄能綁 autotext 者優先綁、無法從專案判斷者留空待人工填、絕不臆測。萃取要領與版面見本文。建照審查表另有專屬 skill，不要用本 skill 代替。
 ---
 
 # BIMTeki 土管檢討表生成
@@ -23,14 +23,15 @@ description: 在 BIMTeki 專案中依使用者提供的「土地使用分區管�
 
 ## 前置檢查
 
-1. 呼叫 `bimteki:check_connection` 確認與 Archicad / BIMTeki Studio 連線。
-   **版本關卡**：`check_connection` 回傳最後一行「版本：」要看過（**沒有這行代表 MCP 早於 0.8.0，照常往下走、不要擋**）——使用者的 MCP／外掛
-   是隨安裝檔更新的，跟本 skill 常常不同期。需求版本與版本不足時的處理方式見
-   `../table/references/mcp-compat.md`；版本不夠就停手請使用者重跑安裝檔，
-   不要改用舊流程默默把表建出來（使用者會拿到一張跟預期不同的表卻不知道為什麼）。
-2. 呼叫 `bimteki:get_project_status`（唯讀、成本低）確認專案狀態：`finalized`（已定案）、`project_file.hasFile`（false＝專案只在記憶體中、變更無法落地，請使用者先另存新檔）。若回報未開啟 BIMTeki 專案，詢問專案路徑後用 `bimteki:open_bimteki_project` 開啟再重試。
-3. 確認使用者已提供土管文件；沒有就先請使用者上傳，不要憑記憶生成任何條文。
-4. 動手前告知即將建立的樣板名稱（預設「土管檢討表」），這是寫入專案的操作。
+標準順序與細節見 `../table/references/spoke-conventions.md` 第 1 節，摘要：
+
+1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `../table/references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
+2. `bimteki:get_project_status`：`finalized`／`project_file.hasFile`／`has_unsaved_changes`；未開啟專案就問路徑後 `bimteki:open_bimteki_project` 再重試。
+3. **專案資料是否填寫齊全**（共用規範第 1 節第 5 步）：讀 `get_project_core_snapshot`（使用分區、都市計畫名稱、基地面積、用途組別、建蔽率／容積率設計值、土地地號）與 `get_project_custom_params`（都市計畫發布文號、細部計畫開發方式，若條文引用），缺的列出來問使用者：先回填（`project-info-fill`）／照現況建表留佔位符／取消；沒答案不建表。
+4. 動手前告知即將建立的樣板名稱（預設「土管檢討表」）與判斷結果，這是寫入專案並存檔的操作；使用者開著表格編輯器等模態視窗時請他先關掉。
+
+本表另外：
+- 確認使用者已提供土管文件；沒有就先請使用者上傳，不要憑記憶生成任何條文。
 
 ## 讀取土管文件
 
@@ -64,27 +65,17 @@ description: 在 BIMTeki 專案中依使用者提供的「土地使用分區管�
 
 ## 建表流程
 
-沿用 BIMTeki 表格樣板的已知眉角（與建照審查表相同）：
+共通眉角見 `../table/references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
 
 1. **組 cells**：
    - Row 0 標題：放 col 0，`textbold: true`、`textsize: 1`、`alignment: 1`、`charwidth: 1`（設 `charwidth: 1` 會自動取消 `newline`）。
    - Row 1、Row 2：放 col 0，`alignment: 1`、`newline: 1`。
    - Row 3 欄位標題：三格皆 `textbold: true`、`alignment: 2`（置中）、`newline: 1`。
-   - Row 4+ 條文列：三欄皆 `alignment: 1`；條文內容與檢討欄 `newline: 1`（直接換行）；條文號碼欄字少，也給 `newline: 1` 保持正常字寬。
-2. 呼叫 `bimteki:create_project_table_template` 一次送入所有 cells，**並同時帶 `merges` 與 `equal_col`**（v0.7.1 起 create 已支援 `merges` / `equal_col` / 框線參數，不必再留到 modify）：
-   - `merges=[{"row":0,"col":0,"colspan":3},{"row":1,"col":0,"colspan":3},{"row":2,"col":0,"colspan":3}]`（三列標題各自跨三欄）。
-   - `equal_col=[1, 2]`（條文號碼欄窄，故等寬群組只涵蓋條文內容與檢討兩欄，把第 0 欄排除在外）。
-   - **合併只能用 `merges` 參數**；寫在 cell 上的 `rowspan`/`colspan` 建立時仍會被忽略。
-   - **`newline` 與 `charwidth: 1` 互斥**：設其一會自動取消另一個。
-   - create 對未指定 `newline`/`charwidth` 的格 **預設 `charwidth: 1`（縮減字寬）**，因此每一格都要明確給定，否則內容格會被非預期縮減字寬。
-   - 條數多、條文長時 cells 會很大，仍應一次組好完整 cells 再送出，不要分次產生殘缺樣板。
-3. 從回傳取得新樣板 guid，呼叫 `bimteki:modify_project_table_template` 補上 create 收不到的樣板層級屬性：
-   - `template_name`：預設「土管檢討表」；同名已存在則加日期後綴。
-   - `column_widths`：長度 3，起始建議 `[70, 480, 350]`（只影響編輯器顯示，不影響放置後的 GDL 欄寬）。
-   - **放置後實際欄寬由 `equalCol` 決定**：新建表格預設全欄等寬。步驟 2 已帶 `equal_col=[1, 2]`；若步驟 4 讀回不是這個值，在此補傳一次。放置後欄寬仍不理想，再與使用者確認調整。
-   - **團隊協作要注意**：modify 前會先整批保留所有已放置的表格；若有表格被其他使用者保留，會回傳錯誤與 `lockedTables`（含 templateName／windowTitle／owner）**且不做任何修改** → 把清單轉告使用者，請持有者釋放後再重試。
-   - create 階段沒生效的格式在此以 `cells` patch 修正（只帶 row/col 與要改的欄位，內容保留）。
-4. **驗證**：用 `bimteki:get_project_table_templates(template_guid=新guid)` 讀回，核對：總列數（3 標題列 + 1 欄位標題列 + 條文數）、三個跨欄合併、條文文字與原文一致（抽查頭尾與最長一條）、該綁 autotext 的格含正確 token、留空格確實為空。有出入用 modify 修正後再讀回。剛建立樣板的 `statedata` 顯示原始 token 字串屬正常（尚未評估），核對以 `originaldata` 為準。
+   - Row 4+ 條文列：三欄皆 `alignment: 1`、`newline: 1`（條文號碼欄字少，也給 `newline: 1` 保持正常字寬）。
+   - 條數多、條文長時 cells 會很大，仍應一次組好完整 cells 再送出。
+2. `bimteki:create_project_table_template` 一次送入所有 cells，並帶 `merges=[{"row":0,"col":0,"colspan":3},{"row":1,"col":0,"colspan":3},{"row":2,"col":0,"colspan":3}]`（三列標題各自跨三欄；合併只能用這個參數）與 `equal_col=[1, 2]`（條文號碼欄窄，等寬群組只涵蓋條文內容與檢討兩欄，把第 0 欄排除在外）。
+3. `bimteki:modify_project_table_template` 補上：`template_name`（預設「土管檢討表」，同名加日期後綴）、`column_widths=[70, 480, 350]`（只影響編輯器顯示；放置後實際欄寬由 `equalCol` 決定）。步驟 4 讀回若 `equalCol` 不是 `[1, 2]`，在此補傳一次；放置後欄寬仍不理想，再與使用者確認調整。
+4. **驗證**：用 `bimteki:get_project_table_templates(template_guid=新guid)` 讀回，核對：總列數（3 標題列 + 1 欄位標題列 + 條文數）、三個跨欄合併、條文文字與原文一致（抽查頭尾與最長一條）、該綁 autotext 的格含正確 token、留空格確實為空。有出入用 modify 修正後再讀回。
 5. **回報**，簡短列出：
    - 樣板名稱與總條數；
    - 哪些條的檢討欄綁了 autotext（列對應欄位）；
@@ -116,20 +107,15 @@ description: 在 BIMTeki 專案中依使用者提供的「土地使用分區管�
   ```json
   {"row": r, "col": 2, "newline": 1, "alignment": 1,
    "segments": [
-     {"type": "text", "value": "實設空地面積\t"},
-     {"type": "autotext", "token": "${...空地面積計算式...}"},
+     {"type": "text", "value": "實設綠化面積\t"},
+     {"type": "autotext", "token": "${...實設綠化面積計算式（組合 formulaToken）...}"},
      {"type": "text", "value": "\n無法綠化之面積\t"},
-     {"type": "autotext", "token": "${...無法綠化面積計算式...}"},
-     {"type": "text", "value": "\n應綠化面積\t"},
-     {"type": "autotext", "token": "${...應設綠化面積計算式...}"},
-     {"type": "text", "value": "\n實設面積\t"},
-     {"type": "autotext", "token": "${...實設綠化面積合計...}"},
-     {"type": "text", "value": "\n檢討\t"},
-     {"type": "autotext", "token": "${...綠化面積檢討式...}"},
-     {"type": "text", "value": "\n喬木數量\t"},
-     {"type": "autotext", "token": "${...喬木檢討式...}"}
+     {"type": "autotext", "token": "${...無法綠化面積計算式（組合 formulaToken）...}"},
+     {"type": "text", "value": "\n應綠化面積\t({=…}公式)"},
+     {"type": "text", "value": "\n檢討\t({?…}判斷式)"}
    ]}
   ```
+  綠化的面積 token 取自「自訂面積項目檢討」項目「綠化面積檢討」的區域組合，應綠化面積與檢討結論是 `{=公式}`／`{?判斷式}`，公式寫法見 `../custom-area-review/SKILL.md` 的「常見案例：土管綠化面積檢討」。
   這個格式不限於綠化面積，其他要求逐項核算的條文（如停車空間的汽車位／機車位／自行車位數量）也適用同樣寫法。**已知限制**：儲存格目前只能整格套用粗體，無法只加粗其中一行（例如只把「檢討」那行變粗），若使用者要強調特定行，需提醒其到 Archicad 內手動調整該格文字格式。
 - 本表所有內容皆屬專案層級，儲存格不需帶 storyGuid。
 
@@ -137,5 +123,4 @@ description: 在 BIMTeki 專案中依使用者提供的「土地使用分區管�
 
 - **不可捏造**：條文文字以外的任何補充（文號、日期、面積數值、免檢討理由）若非來自土管原文或 BIMTeki 專案資料，一律留空或留佔位符。
 - **條文完整性優先**：漏一條比多留幾格空白嚴重得多。萃取後先向使用者報告「共讀到 N 條（第1條～第N條）＋圖X張」再建表，讓使用者有機會發現漏抄。
-- 新建樣板會寫入專案並存檔；刪除舊樣板（`manage_project_table_templates` 的 delete）必須先取得使用者明確同意。
 - 土管文件頁數多時，逐頁視覺閱讀較耗時屬正常，向使用者說明進度即可，不要為了省時間跳頁猜測條文。

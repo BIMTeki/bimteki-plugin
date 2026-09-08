@@ -1,7 +1,7 @@
 ---
 name: project-info-fill
 description: >-
-  把「專案資料夾」裡的建築/土地資料回填到 BIMTeki 專案（寫回專案資訊面板的內建欄位、各領域專屬設定，並把沒有對應欄位、但檢討表會用到的資料寫成「使用者自訂義參數」）。當使用者想要「把資料填回 BIMTeki / 回填專案資訊 / 寫回專案資訊 / 填寫 BIMTeki 專案資訊面板 / 把資料夾資料同步進 BIMTeki / 新增自訂義參數（例如地質敏感地區、都市計畫名稱與函文）/ backfill project info / fill BIMTeki project info」時務必使用本 skill，即使沒有明講「skill」二字。流程：先 check_connection、get_project_status（定案/未存檔把關）、get_project_core_snapshot 與 get_project_custom_params 讀現況，再依 references/source-map.md 從資料夾關鍵文件（概要表、土地使用分區、都市計畫書、地質敏感查詢、謄本、宜居/綠建築等）擷取值，接著依 references/field-routing.md 分流：內建欄位用 set_project_core_info（site/building/review_settings/cost 四個頂層鍵），有專屬工具者用 set_project_land_info / set_land_deduction_areas / set_story_attributes / set_legal_parking_counts / set_project_parking_review / set_project_green_info，都沒有才用 set_project_custom_params（upsert/delete/rename，項目名稱即 CustomParam.{name} 欄位鍵），最後讀回驗證並回報「已寫入 / 待人工確認」清單。本 skill 只負責「回填專案資訊與自訂義參數」；製作檢討表格、繪製容積區域、門窗檢討、法規查詢、面積總表另有各自的 skill，不要用本 skill 處理。
+  把「專案資料夾」裡的建築/土地資料回填到 BIMTeki 專案（寫回專案資訊面板的內建欄位、各領域專屬設定，並把沒有對應欄位、但檢討表會用到的資料寫成「使用者自訂義參數」）。當使用者想要「把資料填回 BIMTeki / 回填專案資訊 / 寫回專案資訊 / 填寫 BIMTeki 專案資訊面板 / 把資料夾資料同步進 BIMTeki / 新增自訂義參數（例如地質敏感地區、都市計畫名稱與函文）/ backfill project info / fill BIMTeki project info」時務必使用本 skill，即使沒有明講「skill」二字。流程：先 check_connection、get_project_status（定案/未存檔把關）、get_project_core_snapshot 與 get_project_custom_params 讀現況，再依 references/source-map.md 從資料夾關鍵文件（概要表、土地使用分區、都市計畫書、地質敏感查詢、謄本、宜居/綠建築等）擷取值，接著依 references/field-routing.md 分流：內建欄位用 set_project_core_info（site/building/review_settings/cost 四個頂層鍵），有專屬工具者用 set_project_land_info / set_land_deduction_areas / set_story_attributes / set_legal_parking_counts / set_project_parking_review，都沒有才用 set_project_custom_params（upsert/delete/rename，項目名稱即 CustomParam.{name} 欄位鍵），最後讀回驗證並回報「已寫入 / 待人工確認」清單。本 skill 只負責「回填專案資訊與自訂義參數」；製作檢討表格、繪製容積區域、門窗檢討、法規查詢、面積總表另有各自的 skill，不要用本 skill 處理。
 ---
 
 # BIMTeki 專案資訊回填（Project Info Backfill）
@@ -20,9 +20,9 @@ BIMTeki 的專案資訊有**多條**寫入路徑，優先序很重要——先�
    - `set_land_deduction_areas` — 逐分區的保留地／道路退縮地／道路退縮地(計入法空)／鄰房侵占面積。**僅限「扣除項使用者自訂」模式**（見下）。
    - `set_story_attributes` — 各棟各層的戶數／樓高／用途。**僅限該欄位已切成自訂模式**（見下）。
    - `set_legal_parking_counts` — 法定汽／機／自行車位數；`set_project_parking_review` — 停車檢討的設定與敘述。
-   - `set_project_green_info` — 綠化的基準型態／應綠化比率／喬木單位面積／實設喬木數／面積來源。
    - `set_bimteki_block_unit_settings` — 棟別／戶別清單（多棟才能增刪棟別）。
 3. **以上都沒有對應欄位的資料** → `set_project_custom_params` 寫成「使用者自訂義參數」。每筆的「項目名稱」全案唯一，且**自動變成 autotext 欄位鍵 `CustomParam.{name}`**，檢討表可以直接綁它。使用者點名的「地質敏感地區」「都市計畫發布日期與函文」多屬此類。
+   - **綠化規定值也走這條，且名稱固定**：分類「綠化面積檢討」→「綠化比率」（`50%`）、「喬木檢討基準」（`64`）、「實設喬木數量」（`3`）、「檢討基數」（`實設空地`／`法定空地`）。綠化面積檢討表的公式（`custom-area-review` 的土管綠化案例）綁這幾個名字，外掛的舊檔轉換也產生同名項目，不要自創近義名；細節見 `references/field-routing.md` C 節。
 
 **所有 `set_*` 工具都會寫入專案並存檔（.bteki），且案件「已定案（finalized）」時會被拒絕。** 因此務必：讀現況 → 對照擷取值 → 只寫「有變更且合法」的欄位 → 讀回驗證。
 
@@ -66,7 +66,7 @@ BIMTeki 的專案資訊有**多條**寫入路徑，優先序很重要——先�
 對照 `references/field-routing.md`，把步驟 2 擷取到的每筆資料歸類：
 
 - 命中「內建可寫欄位」→ 併入 `set_project_core_info` 的 `site`／`building`／`review_settings`／`cost` 物件。
-- 命中「有專屬寫入工具」→ 記到對應工具的批次（`set_project_land_info`／`set_land_deduction_areas`／`set_story_attributes`／`set_legal_parking_counts`／`set_project_parking_review`／`set_project_green_info`），並記下該工具的前提條件。
+- 命中「有專屬寫入工具」→ 記到對應工具的批次（`set_project_land_info`／`set_land_deduction_areas`／`set_story_attributes`／`set_legal_parking_counts`／`set_project_parking_review`），並記下該工具的前提條件。
 - 命中「純計算結果／刻意不開放」→ 不寫（若只是想留存外部依據，改走自訂義參數，並在回報中註明「此為外部依據，非 BIMTeki 計算值」）。
 - 其餘（檢討表要用、但 BIMTeki 沒有任何對應欄位）→ 併入 `set_project_custom_params` 的 `params` 陣列，依 field-routing.md 建議的 `category`／`name`。
 
@@ -96,7 +96,6 @@ BIMTeki 的專案資訊有**多條**寫入路徑，優先序很重要——先�
 | 各棟各層戶數／樓高／用途 | `set_story_attributes` | 每筆要 `storyGuid`（取自 `get_project_stories`）。**欄位只有在 `isCustom` 為 true 時才寫得進去**，否則每次重算都會被壓回 `original`；總計層的樓高／用途永遠不可寫。`floorHeight` 單位是**公分**（320＝3.2 公尺）。樓層骨架本身（名稱、夾層、排序）沒有任何工具可以改。 |
 | 法定汽／機／自行車位數 | `set_legal_parking_counts` | partial update；`-1`＝清除（面板顯示「－」），`0`＝檢討結論為免設，兩者意義不同。 |
 | 停車檢討設定與敘述 | `set_project_parking_review` | 只收設定（law_type／category_type／自訂法規內容／檢討結果敘述等）；**實設位數與地下層明細由停車區域推導，不可寫**。 |
-| 綠化基準／比率／喬木 | `set_project_green_info` | 可寫的只有 `base_type`／`green_percentage`／`tree_unit`／`tree_count`／`area_source` 五項，規定值依本案土管；各項面積與檢討式不可寫。 |
 | 棟別／戶別清單 | `set_bimteki_block_unit_settings` | 棟別增刪僅限多棟案型；改名／刪除會連動遷移既有區域。 |
 
 寫完各自讀回（對應的 `get_*`）確認，並把 `changed`／`warnings`／`savedToFile` 記下來。
@@ -115,7 +114,7 @@ BIMTeki 的專案資訊有**多條**寫入路徑，優先序很重要——先�
 ### 步驟 7：讀回驗證並回報
 
 - 再次 `get_project_core_snapshot`，確認內建欄位已變成預期值（比對 `text`）。
-- 有用到專屬工具的，各自讀回對應的 `get_*`（`get_project_stories`／`get_project_parking_info`／`get_project_green_info`／土地與扣除項看 snapshot 的 `land`）。
+- 有用到專屬工具的，各自讀回對應的 `get_*`（`get_project_stories`／`get_project_parking_info`／土地與扣除項看 snapshot 的 `land`）。
 - `get_project_custom_params`，確認新增／更新的自訂義參數項目都在、`fieldKey` 為 `CustomParam.{name}`。
 - 向使用者回報四塊：
   1. **已寫入內建欄位**（欄位→新值→來源）。
