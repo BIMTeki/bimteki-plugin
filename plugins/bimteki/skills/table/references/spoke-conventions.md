@@ -60,7 +60,7 @@
   **用旗標判樓層角色，比用名稱字串比對可靠。**
 - `get_bimteki_block_unit_settings`：各棟 `name`（A棟、B棟…）。
 - `get_project_parking_info`：法定／實設車位數、地下層停車逐層明細。
-- 綠化：無專屬讀取工具。面積走 `get_project_custom_area_review`（項目「綠化面積檢討」的區域組合），規定值走 `get_project_custom_params`（分類「綠化面積檢討」），基準空地走 coverage／siteOverview 既有 token；建表走 `custom-area-review` 的土管綠化案例。
+- 綠化：無專屬讀取工具。面積走 `get_project_custom_area_review`（項目「綠化面積檢討」的區域組合），規定值走 `get_project_custom_params`（分類「綠化面積檢討」），基準空地走 coverage／siteOverview 既有 token；建表走 `custom-area-review` 的一般流程（項目／組合／參數的固定命名見 `../../project-info-fill/references/field-routing.md` C 節）。
 - `get_project_custom_params`：使用者自訂義參數（欄位鍵 `CustomParam.{項目名}`）。
 - `get_license_status`：授權方案（唯讀、不受授權閘門限制）。
 

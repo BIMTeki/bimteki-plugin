@@ -19,7 +19,7 @@
 | 各層容積檢討表（每地上層一張；當層樓地板面積·10%·15%·陽台/梯廳回計·機電·容積樓地板面積） | storyArea/volumeCheck | → `table-area-per-floor-volume` |
 | 屋突面積檢討表（屋突面積/允建屋突面積/檢討） | roofArea/storyArea（story 相依） | → `table-area-rooftop` |
 | 建蔽率檢討表（表格標題「建築面積檢討」：基地面積→保留地/道路退縮地/鄰房侵占/騎樓/騎樓地扣除→使用面積→設計建築面積→建蔽率檢討） | coverage | → `table-area-coverage` |
-| 綠化面積檢討表（實設空地/法定空地→綠化面積→綠化困難→應綠化→喬木數量；**限都計內/有土管或特殊條例才須做，非都計免檢討**） | customAreaReview（項目「綠化面積檢討」的組合）＋customParam（規定值）＋coverage／siteOverview（基準空地）＋`{=}`/`{?}` | → `custom-area-review`（土管綠化案例：先判都計內外、規定值依土管；不經 hub） |
+| 綠化面積檢討表（實設空地/法定空地→綠化面積→綠化困難→應綠化→喬木數量；**限都計內/有土管或特殊條例才須做，非都計免檢討**） | customAreaReview（項目「綠化面積檢討」的組合）＋customParam（規定值）＋coverage／siteOverview（基準空地）＋`{=}`/`{?}` | → `custom-area-review`（一般流程：先判都計內外、規定值依土管、命名見 field-routing.md C 節；不經 hub） |
 | 各層平面圖法規檢討表（兩欄式：`○○檢討：#NN`＋條文原文＋粗體檢討結論；每層各一張，標準層可跨層共用；依樓層角色增減條列） | 法規＋專案事實＋storyArea | → `table-floor-plan-code`（**開發中、未對外發佈**；獨立 skill，不經 hub） |
 
 ## 判斷「能不能綁 autotext」的通則
@@ -37,7 +37,7 @@
 - `volumeCheck`：法定/設計容積率、允建/設計容積樓地板面積、機電回計式、停車/地下室容積檢討式。
 - `storyArea`（targetTypeName: story，需 storyGuid）：樓層名稱、當層樓地板面積、各空間面積、用途。
 - `customAreaReview`（自訂面積項目檢討）：散裝區域面積、區域組合的合計與計算式 token；綠化面積也在這裡（項目「綠化面積檢討」的組合「實設綠化面積」「無法綠化面積」）。→ `custom-area-review`。
-- `customParam`（使用者自訂義參數）：欄位鍵 `CustomParam.{項目名}`；綠化規定值（綠化比率／喬木檢討基準／實設喬木數量／檢討基數）存在分類「綠化面積檢討」。
+- `customParam`（使用者自訂義參數，專案管理面板「使用者自訂義」）：欄位鍵 `CustomParam.{項目名}`；自訂面積項目檢討的非面積參數（規定比率、檢討基準、實設數量…）依檢討名稱分類存放，綠化規定值（綠化比率／喬木檢討基準／實設喬木數量／檢討基數）存在分類「綠化面積檢討」。→ `custom-area-review` 第二步之二。
 - 停車類：以 catalog 實際回傳的 display 為準比對（版本命名可能不同）。
 
 Token 是專案特定的，**絕不憑記憶或跨專案硬編**；一律 catalog 比對後取用。
