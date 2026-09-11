@@ -125,7 +125,7 @@ powershell -ExecutionPolicy Bypass -File .\install-for-codex.ps1
 ```
 
 它會把連接器設定寫進 `%USERPROFILE%\.codex\config.toml`（其他設定不動、先備份）、把技能複製到
-`%USERPROFILE%\.agents\skills\`，最後真的啟動連接器驗證一次。這個方式裝的技能名稱前面會多 `bimteki-`。
+`%USERPROFILE%\.codex\skills\`（Codex 專用，不會跟 Claude 的技能包重複），最後真的啟動連接器驗證一次。這個方式裝的技能名稱前面會多 `bimteki-`。
 移除用 `.\install-for-codex.ps1 -Uninstall`。
 
 **驗證**：在 Codex 輸入 `/mcp` 應看到 `bimteki`；`/skills` 應看到 BIMTeki 的技能。之後直接用中文交代即可；
@@ -231,7 +231,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$env:ProgramW6432\BIMTeki S
 |---|---|
 | `/mcp` 沒有 bimteki | 重跑一次 `install-for-codex.ps1`，或確認 `%USERPROFILE%\.codex\config.toml` 內有 `[mcp_servers.bimteki]`；改完要完全重開 ChatGPT 桌面版 |
 | bimteki 顯示啟動失敗／逾時 | Windows Defender 第一次掃描內嵌 Python 會超過 Codex 預設的 10 秒。安裝腳本已設 30 秒；用 marketplace 裝的請在 `config.toml` 的 `[mcp_servers.bimteki]` 下加一行 `startup_timeout_sec = 30` |
-| 技能沒出現 | 方式一：確認 Plugins 內 BIMTeki 為啟用；方式二：確認 `%USERPROFILE%\.agents\skills\` 底下有 `bimteki-*` 資料夾 |
+| 技能沒出現 | 方式一：確認 Plugins 內 BIMTeki 為啟用；方式二：確認 `%USERPROFILE%\.codex\skills\` 底下有 `bimteki-*` 資料夾；ChatGPT 桌面版仍沒顯示時改跑 `.\install-for-codex.ps1 -SkillsDir "$HOME\.agents\skills"` |
 | ChatGPT 網頁版看不到工具 | 正常。本機連接器只有桌面版 app 的 Codex／本機代理模式連得到 |
 
 若上述都無法解決，請聯繫 office@arkiteki.com，並附上**檢查腳本的完整輸出**、AI 助理的錯誤訊息與 Archicad 版本。
