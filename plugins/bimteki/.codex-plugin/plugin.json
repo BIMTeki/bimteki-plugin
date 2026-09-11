@@ -10,7 +10,7 @@
   "repository": "https://github.com/BIMTeki/bimteki-plugin",
   "keywords": ["archicad", "bim", "建照", "檢討表", "建築法規", "台灣"],
   "skills": "./skills/",
-  "mcpServers": "./codex-mcp.json",
+  "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "BIMTeki 建照檢討",
     "shortDescription": "Archicad 建照檢討表自動化",
