@@ -1,0 +1,20 @@
+{
+  "name": "bimteki",
+  "interface": {
+    "displayName": "BIMTeki 建照檢討"
+  },
+  "plugins": [
+    {
+      "name": "bimteki",
+      "source": {
+        "source": "local",
+        "path": "./plugins/bimteki"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

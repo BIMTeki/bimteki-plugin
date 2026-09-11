@@ -16,9 +16,9 @@ description: 在 BIMTeki 專案中生成「各層容積檢討」表格（每一�
 
 ## 前置檢查
 
-標準順序與細節見 `../table/references/spoke-conventions.md` 第 1 節，摘要：
+標準順序與細節見 `references/spoke-conventions.md` 第 1 節，摘要：
 
-1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `../table/references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
+1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
 2. `bimteki:get_project_status`：`finalized`／`project_file.hasFile`／`has_unsaved_changes`；未開啟專案就問路徑後 `bimteki:open_bimteki_project` 再重試。
 3. **容積區域已匯入**（共用規範第 1 節第 4 步）：`bimteki:get_bimteki_zone_map` 的 `counts.void` 為 0，或 `bimteki:get_project_stories` 的 `blocks[].stories` 沒有該建的樓層，就停手請使用者先自行在 Archicad 繪製容積區域並匯入 BIMTeki；不代畫、不呼叫建立區域的工具、不建表。
 4. 動手前告知即將建立的樣板名稱（預設「地上X層容積檢討」）與判斷結果，這是寫入專案並存檔的操作；使用者開著表格編輯器等模態視窗時請他先關掉。
@@ -110,7 +110,7 @@ mezz_single 或 5 欄 mezz），不能拿「這是單棟案」當理由跳過夾
 
 ## 產生儲存格並建表
 
-共通眉角見 `../table/references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
+共通眉角見 `references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
 
 1. 依上面結果組出 `scripts/build_volume_table.py` 的 config JSON（欄位說明見結構規格第六節）：
    - 單棟（無夾層）：`mode:"single"`、`story_guid`＝該層。
@@ -138,7 +138,7 @@ mezz_single 或 5 欄 mezz），不能拿「這是單棟案」當理由跳過夾
 - 值格用 `segments`＋autotext token，並帶該樓層/該棟 `storyGuid` 與 `roomGuid`
   （固定常數 `4f8303bf-26fd-4a53-9fe7-2a7c13fdf3d3`，所有 BIMTeki 容積檢討表都用它；直接照抄）。
 - 全表 `alignment:1`（靠左）、`textbold:false`。區段標籤（col0）`charwidth:1`、`textsize:2`；
-  項目名（col1）`charwidth:0`；值格 `charwidth:0`、`newline:3`（直接換行）；標題列 `textsize:1`。格式值域見 `../table/references/spoke-conventions.md` 第 5 節。
+  項目名（col1）`charwidth:0`；值格 `charwidth:0`、`newline:3`（直接換行）；標題列 `textsize:1`。格式值域見 `references/spoke-conventions.md` 第 5 節。
 - 標題只用「樓層名稱」autotext＋「容積檢討」（實測樓層名 token 回傳「地上二層」不含棟別，標題乾淨）。
 - 區段標籤在 col0 用 `merges` 的 rowspan 涵蓋該段列數；(A)-(B)+(C) 只有 1 列不合併；標題列 colspan＝總欄數。
 - (A)-(B)+(C) 最終列的段標籤**依是否有 B/C 段動態組**：「(A)」為底，有 B 加「-(B)」、有 C 加「+(C)」（build 腳本已自動處理）。

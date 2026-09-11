@@ -19,9 +19,9 @@ description: 在 BIMTeki 專案中生成「地下層容積檢討」表格（俗�
 
 ## 前置檢查
 
-標準順序與細節見 `../table/references/spoke-conventions.md` 第 1 節，摘要：
+標準順序與細節見 `references/spoke-conventions.md` 第 1 節，摘要：
 
-1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `../table/references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
+1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
 2. `bimteki:get_project_status`：`finalized`／`project_file.hasFile`／`has_unsaved_changes`；未開啟專案就問路徑後 `bimteki:open_bimteki_project` 再重試。
 3. **容積區域已匯入**（共用規範第 1 節第 4 步）：`bimteki:get_bimteki_zone_map` 的 `counts.void` 為 0，或 `bimteki:get_project_stories` 的 `blocks[].stories` 沒有該建的樓層，就停手請使用者先自行在 Archicad 繪製容積區域並匯入 BIMTeki；不代畫、不呼叫建立區域的工具、不建表。
 4. 動手前告知即將建立的樣板名稱（預設「地下層容積檢討」）與判斷結果，這是寫入專案並存檔的操作；使用者開著表格編輯器等模態視窗時請他先關掉。
@@ -79,7 +79,7 @@ description: 在 BIMTeki 專案中生成「地下層容積檢討」表格（俗�
 
 ## 產生儲存格並建表
 
-共通眉角見 `../table/references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
+共通眉角見 `references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
 
 1. 組 `scripts/build_basement_table.py` 的 config JSON：
    ```json

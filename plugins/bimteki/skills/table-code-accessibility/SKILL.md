@@ -18,9 +18,9 @@ description: 在 BIMTeki 專案中生成「建築技術規則設計施工篇第�
 
 ## 前置檢查
 
-標準順序與細節見 `../table/references/spoke-conventions.md` 第 1 節，摘要：
+標準順序與細節見 `references/spoke-conventions.md` 第 1 節，摘要：
 
-1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `../table/references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
+1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
 2. `bimteki:get_project_status`：`finalized`／`project_file.hasFile`／`has_unsaved_changes`；未開啟專案就問路徑後 `bimteki:open_bimteki_project` 再重試。
 3. **專案資料是否填寫齊全**（共用規範第 1 節第 5 步）：讀 `get_project_core_snapshot`（用途組別、層數、戶數、建築高度）與 `get_project_stories`（各層用途），缺的列出來問使用者：先回填（`project-info-fill`）／照現況建表留佔位符／取消；沒答案不建表。
 4. 動手前告知即將建立的樣板名稱（預設「無障礙建築檢討表」）與判斷結果，這是寫入專案並存檔的操作；使用者開著表格編輯器等模態視窗時請他先關掉。
@@ -48,7 +48,7 @@ description: 在 BIMTeki 專案中生成「建築技術規則設計施工篇第�
 
 ## 建表流程
 
-共通眉角見 `../table/references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
+共通眉角見 `references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
 
 1. **組 cells**：
    - Row 0：大標題「建築技術規則設計施工篇第十章 無障礙建築」放 col 0，`textbold:true`、`textsize:1`、`alignment:1`、`charwidth:1`；跨欄合併靠步驟 2 的 `merges`。
@@ -70,7 +70,7 @@ description: 在 BIMTeki 專案中生成「建築技術規則設計施工篇第�
      {"type":"text","value":" 輛，應設無障礙停車位 1 輛、本案設置 2 輛，符合規定。~ok"}]}
   ```
 - 含佔位符：`{"segments":[{"type":"text","value":"檢討：本案非屬B-4組，故不適用。~ok"}]}`
-- 格式欄位的值域與預設見 `../table/references/spoke-conventions.md` 第 5 節；本表用法：標題 `charwidth:1`、其餘 `newline:2`；合併只在 `merges`。所有內容屬專案層級，儲存格不需 storyGuid。
+- 格式欄位的值域與預設見 `references/spoke-conventions.md` 第 5 節；本表用法：標題 `charwidth:1`、其餘 `newline:2`；合併只在 `merges`。所有內容屬專案層級，儲存格不需 storyGuid。
 
 ## 注意事項
 

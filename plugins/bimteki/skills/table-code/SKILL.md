@@ -1,7 +1,7 @@
 ---
 name: table-code
 argument-hint: "[審查|土管|無障礙|清單]"
-description: BIMTeki「法規條文檢討表」的分類入口與調度（hub）。當使用者想要「做建照審查表 / 做審查表第18~27項 / 做土管表 / 土管檢討 / 做無障礙檢討 / 無障礙建築檢討表 / 這些法規檢討表可以做哪些 / building code review tables」時務必使用本 skill，即使沒有明講「skill」二字。可帶關鍵字直接指定要哪張表，例如 `/bimteki:table-code 審查`、`土管`、`無障礙`；英文 `permit`／`landuse`／`a11y` 同樣接受。本 skill 不直接建表、不查法規，只確認連線、**檢查專案資料是否填寫齊全**（右欄要引用的基地／建築概要與自訂義參數有缺就列出來，請使用者確認是先回填還是照現況建表）、確認條文來源齊全（土管表需使用者附文件），再路由到各表專屬 skill（`table-code-permit`／`table-code-landuse`／`table-code-accessibility`）。面積與容積類（面積總表、各層容積、地下層、屋突、建蔽率、基地概要）是另一個 hub `table-area`；各層平面圖法規檢討表是獨立的 `table-floor-plan-code`（開發中），都不在本 skill 範圍。
+description: BIMTeki「法規條文檢討表」的分類入口與調度（hub）。當使用者想要「做建照審查表 / 做審查表第18~27項 / 做土管表 / 土管檢討 / 做無障礙檢討 / 無障礙建築檢討表 / 這些法規檢討表可以做哪些 / building code review tables」時務必使用本 skill，即使沒有明講「skill」二字。可帶關鍵字直接指定要哪張表，例如「審查」、「土管」、「無障礙」；英文 `permit`／`landuse`／`a11y` 同樣接受。本 skill 不直接建表、不查法規，只確認連線、**檢查專案資料是否填寫齊全**（右欄要引用的基地／建築概要與自訂義參數有缺就列出來，請使用者確認是先回填還是照現況建表）、確認條文來源齊全（土管表需使用者附文件），再路由到各表專屬 skill（`table-code-permit`／`table-code-landuse`／`table-code-accessibility`）。面積與容積類（面積總表、各層容積、地下層、屋突、建蔽率、基地概要）是另一個 hub `table-area`；各層平面圖法規檢討表是獨立的 `table-floor-plan-code`（開發中），都不在本 skill 範圍。
 ---
 
 # BIMTeki 法規條文檢討表（分類 hub）
@@ -12,7 +12,7 @@ description: BIMTeki「法規條文檢討表」的分類入口與調度（hub）
 
 ## 流程
 
-1. **前置檢查**：`bimteki:check_connection`（多開時先選 instance）。**回傳最後一行「版本：」要看過**（沒有這行代表 MCP 早於 0.8.0，照常往下走、不要擋）；需求版本與版本不足時的處理見 `../table/references/mcp-compat.md`。再 `bimteki:get_project_status`（唯讀）看 `finalized` 與 `project_file.hasFile`（false 請先另存新檔）；未開啟專案則詢問路徑後 `bimteki:open_bimteki_project`。本類表不依案型分支，但右欄常引用專案事實（用途組別、層數、面積、樓層骨架），由各 spoke 自行讀取。
+1. **前置檢查**：`bimteki:check_connection`（多開時先選 instance）。**回傳最後一行「版本：」要看過**（沒有這行代表 MCP 早於 0.8.0，照常往下走、不要擋）；需求版本與版本不足時的處理見 `references/mcp-compat.md`。再 `bimteki:get_project_status`（唯讀）看 `finalized` 與 `project_file.hasFile`（false 請先另存新檔）；未開啟專案則詢問路徑後 `bimteki:open_bimteki_project`。本類表不依案型分支，但右欄常引用專案事實（用途組別、層數、面積、樓層骨架），由各 spoke 自行讀取。
 2. **釐清要做哪張表**：帶參數時先查下方「參數對照」直接認定，不要再問；沒帶參數就列出本 hub 的表請使用者勾選。
 3. **檢查專案資料是否填寫齊全**（見下節）：依要做的表讀 `get_project_core_snapshot`、`get_project_custom_params`、`get_project_stories`，把該表右欄會引用、但目前是空的欄位列出來，**請使用者確認是先回填（交給 `project-info-fill`）還是就照現況建表（空缺處留佔位符）**；沒得到答案不要往下走。
 4. **確認條文來源**：`table-code-landuse` 會**讀使用者上傳的土管文件**逐條萃取，沒附文件先請他提供再路由；建照審查表與無障礙的條文是固定的，spoke 內建。
@@ -21,9 +21,9 @@ description: BIMTeki「法規條文檢討表」的分類入口與調度（hub）
 
 ## 事前檢查：專案資料是否填寫齊全
 
-法規類表的右欄大量引用專案資訊；資料沒填，建出來的表就是一堆佔位符與「非…故免檢討」樣板句。檢查方式、各表要看的欄位、缺漏時怎麼問（先回填／照現況建表／取消）是共用規範（`../table/references/spoke-conventions.md` 第 1 節第 5 步），本 hub 與三支 spoke 都做同一套。本 hub 的責任是在路由前先問完，並把使用者的答案（哪些欄位確定留空）交給 spoke，避免 spoke 再問一次；沒拿到答案不路由。
+法規類表的右欄大量引用專案資訊；資料沒填，建出來的表就是一堆佔位符與「非…故免檢討」樣板句。檢查方式、各表要看的欄位、缺漏時怎麼問（先回填／照現況建表／取消）是共用規範（`references/spoke-conventions.md` 第 1 節第 5 步），本 hub 與三支 spoke 都做同一套。本 hub 的責任是在路由前先問完，並把使用者的答案（哪些欄位確定留空）交給 spoke，避免 spoke 再問一次；沒拿到答案不路由。
 
-## 參數對照（`/bimteki:table-code <關鍵字>`）
+## 參數對照（呼叫本 skill 時帶的關鍵字）
 
 | 關鍵字 | 也接受 | 檢討表 | 交給 |
 |---|---|---|---|
@@ -36,9 +36,9 @@ description: BIMTeki「法規條文檢討表」的分類入口與調度（hub）
 
 ## 法規類 spoke 共用的眉角
 
-儲存格格式、建表共通流程與寫入底線統一收在 `../table/references/spoke-conventions.md`（各 spoke 都指回那一份）。路由前最值得先提醒的幾點，都是本類表特有的坑：
+儲存格格式、建表共通流程與寫入底線統一收在 `references/spoke-conventions.md`（各 spoke 都指回那一份）。路由前最值得先提醒的幾點，都是本類表特有的坑：
 
-- **條文逐字照抄**：固定條文以 spoke 內建為準；使用者附的法規文件（土管 PDF）文字層常為亂碼，抽取出亂碼就改用視覺方式逐頁閱讀（Read 工具會把 PDF 頁面渲染成影像）。條文抄錄正確性優先於速度，不要改寫、不要摘要。
+- **條文逐字照抄**：固定條文以 spoke 內建為準；使用者附的法規文件（土管 PDF）文字層常為亂碼，抽取出亂碼就改用視覺方式逐頁閱讀（以所在環境的 PDF／影像讀取能力把頁面當圖看，不要再抽文字層）。條文抄錄正確性優先於速度，不要改寫、不要摘要。
 - **右欄的優先序**：能綁 autotext 的專案事實優先綁（用途組別、層數、面積、車位數等，token 以 catalog 的 display 比對取用、不跨案硬編）→ 無對應者用該表的標準樣板句 → 外部引用（函號、核准日期、圖號、公告地價）一律留佔位符（文號 `◯◯◯字第◯◯◯◯◯號`、日期 `○○○年○○月○○日`、圖號 `A0-○`），格式見 `spoke-conventions.md` 第 4 節。**無法從專案判斷的就留空待人工填，絕不臆測。**
 - **「非…故免檢討」類樣板句**是常見預設，BIMTeki 無法驗證是否屬實；spoke 回報時要提醒使用者逐條確認。
 - **依數值變化的結論用判斷式** `{?條件|成立時|不成立時}`（符合／不符合、■□ 勾選），不寫死建表當下的判定；需外掛 ≥ 0.0.23，太舊就退回「結論不寫、只寫左式數值」。

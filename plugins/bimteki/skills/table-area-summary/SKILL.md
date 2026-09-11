@@ -11,9 +11,9 @@ description: 在 BIMTeki 專案中生成「各層樓地板面積」面積總表�
 
 ## 前置檢查
 
-標準順序與細節見 `../table/references/spoke-conventions.md` 第 1 節，摘要：
+標準順序與細節見 `references/spoke-conventions.md` 第 1 節，摘要：
 
-1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `../table/references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
+1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
 2. `bimteki:get_project_status`：`finalized`／`project_file.hasFile`／`has_unsaved_changes`；未開啟專案就問路徑後 `bimteki:open_bimteki_project` 再重試。
 3. **容積區域已匯入**（共用規範第 1 節第 4 步）：`bimteki:get_bimteki_zone_map` 的 `counts.void` 為 0，或 `bimteki:get_project_stories` 的 `blocks[].stories` 沒有該建的樓層，就停手請使用者先自行在 Archicad 繪製容積區域並匯入 BIMTeki；不代畫、不呼叫建立區域的工具、不建表。
 4. 動手前告知即將建立的樣板名稱（預設「各層樓地板面積」）與判斷結果，這是寫入專案並存檔的操作；使用者開著表格編輯器等模態視窗時請他先關掉。
@@ -63,7 +63,7 @@ description: 在 BIMTeki 專案中生成「各層樓地板面積」面積總表�
 
 ## 建表流程
 
-共通眉角見 `../table/references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
+共通眉角見 `references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
 
 1. **依 `references/table-structure.md` 第四節**組出完整 cells 陣列：標題三列（表頭合併與 colspan 依存活欄動態）、**騎樓列（0~1 列：本案騎樓樓地板面積 > 0 時，插在「地上一層」之前，層別欄固定文字「騎樓」、A 欄綁騎樓 autotext 並把該格 storyGuid 設為地上一層，詳參考檔四之 2）**、樓層列（依案型選 storyGuidList 項目、逐格帶 storyGuid）、總計列（A 欄改綁 buildingOverview 的「計算式：總樓地板面積」以含入騎樓、其餘欄帶全案總計 guid）、檢討列（0～2 列：機電空間容積檢討列僅在全案總計「面積：安全梯和管委會空間」或「面積：機電設備空間和管道間」任一非 0 時顯示；地下層容積檢討列僅在「地下層總量檢討（`basement_review_mode == "sum"`）且地下層面積 > 0」時顯示，詳見參考檔四之 4）、最終列（檢討列與最終列 colspan 依 `Dcol` 計算）。省略檢討列時，後續列的 row 索引與 merges 要跟著上移，不要留空白列。
 2. 呼叫 `bimteki:create_project_table_template`，一次傳入所有 cells，**並同時帶 `merges` 與 `equal_col`**（v0.7.1 起 create 已支援 `merges` / `equal_col` / `right_line` / `bottom_line` / `left_line` / `top_line`，這張表合併很多，一步帶齊可省一次大 payload 的往返）。**實測注意**：
@@ -96,7 +96,7 @@ description: 在 BIMTeki 專案中生成「各層樓地板面積」面積總表�
     {"type": "autotext", "token": "${...機電設備檢討式...}"}
   ]}
   ```
-- **格式欄位**的值域與預設見 `../table/references/spoke-conventions.md` 第 5 節；本表：標題列與數值格 `charwidth: 0`、子欄表頭與 col 0 標籤 `charwidth: 1`、檢討列 `newline: 2`；合併只在 `merges`。
+- **格式欄位**的值域與預設見 `references/spoke-conventions.md` 第 5 節；本表：標題列與數值格 `charwidth: 0`、子欄表頭與 col 0 標籤 `charwidth: 1`、檢討列 `newline: 2`；合併只在 `merges`。
 - volumeCheck 類 token（startmanager）不需要 storyGuid；固定文字格也可省略 storyGuid。
 
 ## 注意事項

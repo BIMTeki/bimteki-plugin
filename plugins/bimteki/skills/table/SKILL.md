@@ -31,7 +31,7 @@ description: BIMTeki 建照「檢討表格」的清單與入口說明。當使�
 
 ## 共用參考的家
 
-各 spoke 與兩個分類 hub 共用的規範放在本 skill 的 `references/`，其他 skill 以 `../table/references/…` 相對路徑引用；改共通行為只改這一份：
+各 spoke 與兩個分類 hub 共用的規範放在本 skill 的 `references/`，其他 skill 以 `references/…` 相對路徑引用（發佈時會複製一份到各 spoke 自己的 `references/`）；改共通行為只改這一份：
 
 - `references/spoke-conventions.md`：前置檢查、唯讀工具、autotext 原則、佔位符與樣板句、儲存格格式、建表共通流程、寫入底線。
 - `references/mcp-compat.md`：所有 skill 的需求版本單一來源（MCP／外掛／圖庫）。

@@ -1,8 +1,9 @@
 {
   "mcpServers": {
     "bimteki": {
-      "command": "${ProgramW6432:-C:\\Program Files}\\BIMTeki Studio\\mcp\\python\\python.exe",
-      "args": ["${ProgramW6432:-C:\\Program Files}\\BIMTeki Studio\\mcp\\server\\main.py"],
+      "type": "stdio",
+      "command": "C:\\Program Files\\BIMTeki Studio\\mcp\\python\\python.exe",
+      "args": ["C:\\Program Files\\BIMTeki Studio\\mcp\\server\\main.py"],
       "env": {
         "PYTHONUTF8": "1",
         "PYTHONDONTWRITEBYTECODE": "1"

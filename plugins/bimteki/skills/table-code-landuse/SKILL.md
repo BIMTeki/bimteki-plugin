@@ -23,9 +23,9 @@ description: 在 BIMTeki 專案中依使用者提供的「土地使用分區管�
 
 ## 前置檢查
 
-標準順序與細節見 `../table/references/spoke-conventions.md` 第 1 節，摘要：
+標準順序與細節見 `references/spoke-conventions.md` 第 1 節，摘要：
 
-1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `../table/references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
+1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
 2. `bimteki:get_project_status`：`finalized`／`project_file.hasFile`／`has_unsaved_changes`；未開啟專案就問路徑後 `bimteki:open_bimteki_project` 再重試。
 3. **專案資料是否填寫齊全**（共用規範第 1 節第 5 步）：讀 `get_project_core_snapshot`（使用分區、都市計畫名稱、基地面積、用途組別、建蔽率／容積率設計值、土地地號）與 `get_project_custom_params`（都市計畫發布文號、細部計畫開發方式，若條文引用），缺的列出來問使用者：先回填（`project-info-fill`）／照現況建表留佔位符／取消；沒答案不建表。
 4. 動手前告知即將建立的樣板名稱（預設「土管檢討表」）與判斷結果，這是寫入專案並存檔的操作；使用者開著表格編輯器等模態視窗時請他先關掉。
@@ -35,7 +35,7 @@ description: 在 BIMTeki 專案中依使用者提供的「土地使用分區管�
 
 ## 讀取土管文件
 
-**臺灣政府機關的土管 PDF 文字層經常是亂碼**（自訂字型編碼），用程式抽文字前務必抽一小段檢查：若出現大量無法辨識的字元，改用視覺方式逐頁閱讀 PDF（Read 工具會把 PDF 頁面渲染成影像）並人工抄錄。抄錄正確性優先於速度——條文是法規文字，一字之差都可能造成審查爭議。
+**臺灣政府機關的土管 PDF 文字層經常是亂碼**（自訂字型編碼），用程式抽文字前務必抽一小段檢查：若出現大量無法辨識的字元，改用視覺方式逐頁閱讀 PDF（以所在環境的 PDF／影像讀取能力把頁面當圖看，不要再抽文字層）並人工抄錄。抄錄正確性優先於速度——條文是法規文字，一字之差都可能造成審查爭議。
 
 從文件中萃取：
 
@@ -65,7 +65,7 @@ description: 在 BIMTeki 專案中依使用者提供的「土地使用分區管�
 
 ## 建表流程
 
-共通眉角見 `../table/references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
+共通眉角見 `references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
 
 1. **組 cells**：
    - Row 0 標題：放 col 0，`textbold: true`、`textsize: 1`、`alignment: 1`、`charwidth: 1`（設 `charwidth: 1` 會自動取消 `newline`）。
@@ -115,7 +115,7 @@ description: 在 BIMTeki 專案中依使用者提供的「土地使用分區管�
      {"type": "text", "value": "\n檢討\t({?…}判斷式)"}
    ]}
   ```
-  綠化的面積 token 取自「自訂面積項目檢討」項目「綠化面積檢討」的區域組合，應綠化面積與檢討結論是 `{=公式}`／`{?判斷式}`，公式寫法見 `../custom-area-review/SKILL.md` 的公式與判斷式規則。
+  綠化的面積 token 取自「自訂面積項目檢討」項目「綠化面積檢討」的區域組合，應綠化面積與檢討結論是 `{=公式}`／`{?判斷式}`，公式寫法見 `custom-area-review` skill 的公式與判斷式規則。
   這個格式不限於綠化面積，其他要求逐項核算的條文（如停車空間的汽車位／機車位／自行車位數量）也適用同樣寫法。**已知限制**：儲存格目前只能整格套用粗體，無法只加粗其中一行（例如只把「檢討」那行變粗），若使用者要強調特定行，需提醒其到 Archicad 內手動調整該格文字格式。
 - 本表所有內容皆屬專案層級，儲存格不需帶 storyGuid。
 

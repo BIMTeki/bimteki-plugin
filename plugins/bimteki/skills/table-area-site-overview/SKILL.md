@@ -15,9 +15,9 @@ description: 在 BIMTeki 專案中生成「基地概要」表格（TableTemplate
 
 ## 前置檢查
 
-標準順序與細節見 `../table/references/spoke-conventions.md` 第 1 節，摘要：
+標準順序與細節見 `references/spoke-conventions.md` 第 1 節，摘要：
 
-1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `../table/references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
+1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
 2. `bimteki:get_project_status`：`finalized`（已定案，之後寫回工程造價單價會被拒絕）／`project_file.hasFile`／`has_unsaved_changes`；未開啟專案就問路徑後 `bimteki:open_bimteki_project` 再重試。
 3. **建蔽區域已匯入**（共用規範第 1 節第 4 步）：`bimteki:get_bimteki_zone_map` 的 `counts.arch` 為 0 就停手請使用者先自行在 Archicad 繪製建築面積區域並匯入 BIMTeki；不代畫、不呼叫建立區域的工具、不建表。
 4. 動手前告知即將建立的樣板名稱（預設「基地概要」）與判斷結果，這是寫入專案並存檔的操作；使用者開著表格編輯器等模態視窗時請他先關掉。
@@ -67,7 +67,7 @@ description: 在 BIMTeki 專案中生成「基地概要」表格（TableTemplate
 
 ## 建表流程
 
-共通眉角見 `../table/references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
+共通眉角見 `references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
 
 1. **組 cells**：
    - Row 0：col 0 留空（不放文字，僅作左上角空格）；col 1 放大標題「基地概要」，`textbold: true`、`textsize: 1`、`alignment: 2`（置中）、`newline: 1`。
@@ -114,7 +114,7 @@ description: 在 BIMTeki 專案中生成「基地概要」表格（TableTemplate
    ]}
   ```
 - **含佔位符**：`{"segments": [{"type": "text", "value": "起造人：◯◯◯建設有限公司 負責人：◯◯◯"}]}`（若專案資訊/自訂義參數已有起造人資料則優先帶入，找不到才用佔位符）。
-- **格式欄位**的值域與預設見 `../table/references/spoke-conventions.md` 第 5 節；本表：`textbold`／`textsize: 1`／`alignment: 2` 僅標題，其餘全用 `newline`（1 或 2）、不用 `charwidth` 縮減。
+- **格式欄位**的值域與預設見 `references/spoke-conventions.md` 第 5 節；本表：`textbold`／`textsize: 1`／`alignment: 2` 僅標題，其餘全用 `newline`（1 或 2）、不用 `charwidth` 縮減。
 - 本表所有內容皆屬專案層級 autotext，儲存格不需帶 `storyGuid`。
 
 ## 注意事項

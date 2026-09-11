@@ -6,7 +6,7 @@
 
 ## 需求
 
-- Claude 付費方案（Pro / Max / Team / Enterprise）
+- Claude 付費方案（Pro / Max / Team / Enterprise），或 ChatGPT 任一方案（ChatGPT 桌面版／Codex）
 - Archicad 已安裝 BIMTeki Studio 外掛且授權正常
 - BIMTeki MCP 已安裝並連線
 - 使用時 Archicad 需開啟對應專案

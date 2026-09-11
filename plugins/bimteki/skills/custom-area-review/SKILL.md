@@ -19,8 +19,8 @@ description: 在 BIMTeki 專案中依使用者提供的「檢討方式」檢討�
 
 ## 前置檢查
 
-1. `bimteki:check_connection`（多開時先選 instance；標準前置檢查見 `../table/references/spoke-conventions.md` 第 1 節）。
-   **版本關卡（本表例外，需求比通則高）**：`get_project_custom_area_review`／`set_project_custom_area_review` 是 **MCP ≥ 0.11.0** 才有的工具，而本 skill 用到的**區域組合**（`create_group` 等 5 個 action）要 **MCP ≥ 0.12.0**（需求版本以 `../table/references/mcp-compat.md` 為準）。判斷方式：**工具清單裡找不到這兩支工具＝版本太舊**；找得到、但 `set_project_custom_area_review` 的說明沒有 `create_group` ＝ 只有 0.11.x，多顆面積只能退回 `{=a+b+c}` 湊合計（要跟使用者說明這是版本限制）。兩種情況都請使用者重跑最新版 BIMTeki Studio 安裝檔後**完全重開 Claude**，不要改用其他工具拼湊替代流程。
+1. `bimteki:check_connection`（多開時先選 instance；標準前置檢查見 `references/spoke-conventions.md` 第 1 節）。
+   **版本關卡（本表例外，需求比通則高）**：`get_project_custom_area_review`／`set_project_custom_area_review` 是 **MCP ≥ 0.11.0** 才有的工具，而本 skill 用到的**區域組合**（`create_group` 等 5 個 action）要 **MCP ≥ 0.12.0**（需求版本以 `references/mcp-compat.md` 為準）。判斷方式：**工具清單裡找不到這兩支工具＝版本太舊**；找得到、但 `set_project_custom_area_review` 的說明沒有 `create_group` ＝ 只有 0.11.x，多顆面積只能退回 `{=a+b+c}` 湊合計（要跟使用者說明這是版本限制）。兩種情況都請使用者重跑最新版 BIMTeki Studio 安裝檔後**完全重開 Claude**，不要改用其他工具拼湊替代流程。
    > 註：MCP 是獨立 process，重跑安裝檔後沒有完全重開 Claude 的話，工具說明會停留在舊版（曾發生「原始碼有 `create_group`、工具說明卻沒有」的誤判）。
 2. 呼叫 `bimteki:get_project_status`（唯讀）：`finalized` 為真代表案件已定案，**寫入會被拒絕**——直接告知使用者本 skill 無法在定案狀態下匯入區域，結束；`project_file.hasFile` 為假請使用者先「另存新檔」；`has_unsaved_changes` 為真先告知會一併存檔；未開啟專案則詢問路徑後 `bimteki:open_bimteki_project`。
 3. **授權把關**：兩支工具回傳 `error_code="feature_not_licensed"` 時，代表使用者的訂閱不含「自訂面積項目檢討」模組（**試用方案不含此模組**，即使 `check_connection` 回「授權正常」也一樣被擋）。直接轉告工具回的原句「目前訂閱不包含『自訂面積項目檢討』授權，請聯絡 BIMTeki 客服升級方案」，**不要**嘗試用其他工具繞過。想講清楚是哪種授權狀態可加呼叫 `bimteki:get_license_status`（唯讀、不受授權閘門限制）看 `plan`／`is_trial`／`trial_ends_at`。
@@ -108,7 +108,7 @@ bimteki:set_project_custom_area_review(actions=[
   - 純換算常數（×100 轉百分比、單位換算）留在公式即可；法規算式裡的固定倍率（「二分之一」「0.5」）預設也留在公式，**使用者要求可調整時才建參數**。
 - **取 token**：`get_project_custom_params` 只給 `fieldKey`，token 要從 `bimteki:get_project_autotext_catalog(category="customParam")` 取——`display`＝項目名稱、資料夾路徑＝〔專案自訂義參數, 分類〕；或直接 `bimteki:evaluate_autotext_values(category="customParam")`，一次拿到 `token`＋當下 `text`／`value`。
 - **token 綁「項目名稱」**：改分類名、搬分類、改 content 都不影響；`delete`／`rename` 會讓綁舊名的表格失效（回傳 `warnings` 列出受影響的鍵）——執行前先問使用者，事後告知哪些樣板要改綁。
-- 案件已定案時本工具同樣被拒。BIMTeki 已有內建欄位或既有 token 的資料（基地面積、法定空地、法定建蔽率…）直接用既有 token，不要複製一份成參數（分流見 `../project-info-fill/references/field-routing.md`）。
+- 案件已定案時本工具同樣被拒。BIMTeki 已有內建欄位或既有 token 的資料（基地面積、法定空地、法定建蔽率…）直接用既有 token，不要複製一份成參數（分流見 `project-info-fill` skill 的 `references/field-routing.md`）。
 
 ## 第三步：取 token
 
@@ -143,7 +143,7 @@ row 9   (2)SA≧GA×{P率}      {SA} m² ≧ {GA}×{P率} = {=roundn({GA}*{P率}
 
 比例式的檢討（「某面積 ÷ 另一面積 ≧ 規定比率」）就把檢討列寫成 `{=roundn({A}/{B}*100, 2)} % ≧ {P率}`（`{P率}` 是內容「10%」的自訂義參數 token，顯示時就是「10%」）。只有在**真的沒有對應組合**時（組合尚未建、或要臨時加減跨組的量）才用 `{=...}` 湊合計。
 
-檢討列的「≧ 規定值」放**自訂義參數 token**（第二步之二），不要用純文字把數字寫死；**結論（符合／不符合）用判斷式**寫成 `{?{A}/{B} >= {P率}|符合|不符合}`（`{P率}` 內容「10%」代入時自動成 0.1，所以條件直接比比值，不要一邊 ×100 一邊不乘；規則見下節），由外掛依當下面積與參數判定、隨模型或參數變動自動更新，**不要寫死**。判斷式需**外掛 ≥ 0.0.23**（以 `../table/references/mcp-compat.md` 為準）；外掛太舊時退回舊做法——結論預設不寫，使用者堅持要結論文字時可寫入當下判定，但回報時**必須**提醒「此結論為建表當下的判定，模型變動後不會自動改變，請以左式數值為準」。
+檢討列的「≧ 規定值」放**自訂義參數 token**（第二步之二），不要用純文字把數字寫死；**結論（符合／不符合）用判斷式**寫成 `{?{A}/{B} >= {P率}|符合|不符合}`（`{P率}` 內容「10%」代入時自動成 0.1，所以條件直接比比值，不要一邊 ×100 一邊不乘；規則見下節），由外掛依當下面積與參數判定、隨模型或參數變動自動更新，**不要寫死**。判斷式需**外掛 ≥ 0.0.23**（以 `references/mcp-compat.md` 為準）；外掛太舊時退回舊做法——結論預設不寫，使用者堅持要結論文字時可寫入當下判定，但回報時**必須**提醒「此結論為建表當下的判定，模型變動後不會自動改變，請以左式數值為準」。
 
 ### `{=...}` 公式規則（本表的核心能力）
 
@@ -189,7 +189,7 @@ row 9   (2)SA≧GA×{P率}      {SA} m² ≧ {GA}×{P率} = {=roundn({GA}*{P率}
   ```
 - 舊版外掛（< 0.0.23）會把 `{?…}` 當純文字原樣顯示：建表前看 `check_connection` 回報的外掛版本，太舊就退回「結論不寫死」。
 
-### 建表流程（共通眉角見 `../table/references/spoke-conventions.md` 第 5～6 節）
+### 建表流程（共通眉角見 `references/spoke-conventions.md` 第 5～6 節）
 
 1. **組 cells**：標題列 `textbold: true`、`textsize: 1`；區塊標題列 `textbold: true`；每格明確給 `newline`（未給時 `charwidth` 預設 1 會非預期縮減字寬）；區域名稱列左欄靠左、面積欄靠左。
 2. `bimteki:create_project_table_template` 一次帶齊：`cells`、`merges`（標題與各區塊標題跨兩欄；**合併只能用 merges 參數**）、`equal_col=[0,0]`（放開內容欄等寬；不要傳空陣列）。取回傳 `nodeGuid`。

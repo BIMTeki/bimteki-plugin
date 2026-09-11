@@ -20,9 +20,9 @@ description: 在 BIMTeki 專案中生成「建蔽率檢討」表格（表格標�
 
 ## 前置檢查
 
-標準順序與細節見 `../table/references/spoke-conventions.md` 第 1 節，摘要：
+標準順序與細節見 `references/spoke-conventions.md` 第 1 節，摘要：
 
-1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `../table/references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
+1. `bimteki:check_connection`（多開時先選 instance）。**版本關卡**：回傳最後一行「版本：」要看過——沒有這行代表 MCP 早於 0.8.0，照常往下走；需求版本與不足時的處理見 `references/mcp-compat.md`，版本不夠就停手請使用者重跑安裝檔，不要改用舊流程默默建表。
 2. `bimteki:get_project_status`：`finalized`／`project_file.hasFile`／`has_unsaved_changes`；未開啟專案就問路徑後 `bimteki:open_bimteki_project` 再重試。
 3. **建蔽區域已匯入**（共用規範第 1 節第 4 步）：`bimteki:get_bimteki_zone_map` 的 `counts.arch` 為 0 就停手請使用者先自行在 Archicad 繪製建築面積區域並匯入 BIMTeki；不代畫、不呼叫建立區域的工具、不建表。
 4. 動手前告知即將建立的樣板名稱（預設「建蔽率檢討」）與判斷結果，這是寫入專案並存檔的操作；使用者開著表格編輯器等模態視窗時請他先關掉。
@@ -86,7 +86,7 @@ description: 在 BIMTeki 專案中生成「建蔽率檢討」表格（表格標�
 
 ## 建表流程（兩版共通）
 
-共通眉角見 `../table/references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
+共通眉角見 `references/spoke-conventions.md` 第 5～6 節；下面只列本表特有的設定。
 
 1. **組 cells**：每格明確給 `newline`（不依賴預設的縮減字寬）。全部 `alignment:1`（靠左，含標題）。
 2. `create_project_table_template` 一次帶齊 `cells`、`merges`（合併只能用這個參數）、**`equal_col=[0,0]`**（解除新表預設的強制等寬，`column_widths` 才會生效；別傳空陣列）、**全格線**（`left_line` 每列 1、`top_line` 每欄 1、`right_line`／`bottom_line` 每列×每欄全 1，把整表框滿）。取回傳 `nodeGuid`。
