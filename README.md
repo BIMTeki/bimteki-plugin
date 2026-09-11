@@ -104,7 +104,21 @@ ChatGPT 桌面版（Windows 版由 Microsoft Store 安裝）左上角可以切�
 **BIMTeki 要切到 Codex 模式使用**；Codex 含在所有 ChatGPT 方案內，桌面版與 Codex CLI 共用同一套設定，裝一次兩邊都能用。
 ChatGPT 模式與網頁版只接受遠端 MCP，連不到本機的連接器（和 Claude 的 Cowork／Chat 分工是同一回事）。
 
-**方式一（建議）：從 marketplace 安裝**
+分兩步：**連接器設定**用安裝包的腳本寫一次（Codex 目前不會載入第三方技能包內附的連接器設定，2026-09 實測），
+**技能**從 marketplace 安裝（之後可一鍵更新）。
+
+**步驟 1：寫入連接器設定（一次就好）**
+
+到 [Releases](https://github.com/BIMTeki/bimteki-plugin/releases) 下載 `bimteki-skills-portable-v○.○.○.zip`，解壓縮後在 PowerShell 執行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install-for-codex.ps1 -McpOnly
+```
+
+它會從登錄檔找到 BIMTeki Studio 的安裝位置，把 `[mcp_servers.bimteki]` 寫進 `%USERPROFILE%\.codex\config.toml`
+（其他設定不動、先備份），最後真的啟動連接器驗證一次。BIMTeki Studio 之後升級不用重跑，連接器路徑不會變。
+
+**步驟 2：安裝技能**
 
 在終端機執行：
 
@@ -113,23 +127,15 @@ codex plugin marketplace add BIMTeki/bimteki-plugin
 ```
 
 然後在桌面版切到 **Codex** 模式 → 左側 **外掛程式** → **個人** 分頁，會看到「BIMTeki 建照檢討」，按 **＋** 安裝
-（Codex CLI 則是輸入 `/plugins`）。技能包會自動帶上連接器設定（外掛會標示「Desktop only」，因為連接器只能在本機執行）。
-裝完請**完全關閉並重新開啟 ChatGPT 桌面版**。
+（Codex CLI 則是輸入 `/plugins`）。裝完請**完全關閉並重新開啟 ChatGPT 桌面版**。
 
-**方式二：下載安裝包**
+> 不想用 marketplace 的話，步驟 1 的指令去掉 `-McpOnly`，腳本會連技能一起複製到 `%USERPROFILE%\.codex\skills\`
+> （這樣裝的技能名稱前面會多 `bimteki-`；更新要重新下載 zip 再跑一次）。移除用 `.\install-for-codex.ps1 -Uninstall`。
 
-到 [Releases](https://github.com/BIMTeki/bimteki-plugin/releases) 下載 `bimteki-skills-portable-v○.○.○.zip`，解壓縮後在 PowerShell 執行：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\install-for-codex.ps1
-```
-
-它會把連接器設定寫進 `%USERPROFILE%\.codex\config.toml`（其他設定不動、先備份）、把技能複製到
-`%USERPROFILE%\.codex\skills\`（Codex 專用，不會跟 Claude 的技能包重複），最後真的啟動連接器驗證一次。這個方式裝的技能名稱前面會多 `bimteki-`。
-移除用 `.\install-for-codex.ps1 -Uninstall`。
-
-**驗證**：在 Codex 輸入 `/mcp` 應看到 `bimteki`；`/skills` 應看到 BIMTeki 的技能。之後直接用中文交代即可；
-要指定技能可打 `$table-area-summary`（方式一）或 `$bimteki-table-area-summary`（方式二），ChatGPT 對話框則用 `@` 選技能。
+**驗證**：開新對話時任選一個資料夾（建議建一個空的專用資料夾，例如 `文件\BIMTeki工作`；BIMTeki 不讀那個資料夾的內容）。
+輸入 `/mcp` 應看到 `bimteki`；`/skills` 應看到 BIMTeki 的技能。之後直接用中文交代即可；
+要指定技能可打 `$bimteki:table-area-summary`（marketplace 裝的）或 `$bimteki-table-area-summary`（zip 裝的）。
+技能包頁面不會顯示連接器，以 `/mcp` 為準。
 
 ### Google Antigravity（實驗性）
 
@@ -229,10 +235,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$env:ProgramW6432\BIMTeki S
 
 | 症狀 | 處理方式 |
 |---|---|
-| `/mcp` 沒有 bimteki | 重跑一次 `install-for-codex.ps1`，或確認 `%USERPROFILE%\.codex\config.toml` 內有 `[mcp_servers.bimteki]`；改完要完全重開 ChatGPT 桌面版 |
-| bimteki 顯示啟動失敗／逾時 | Windows Defender 第一次掃描內嵌 Python 會超過 Codex 預設的 10 秒。安裝腳本已設 30 秒；用 marketplace 裝的請在 `config.toml` 的 `[mcp_servers.bimteki]` 下加一行 `startup_timeout_sec = 30` |
-| 技能沒出現 | 方式一：確認 Plugins 內 BIMTeki 為啟用；方式二：確認 `%USERPROFILE%\.codex\skills\` 底下有 `bimteki-*` 資料夾；ChatGPT 桌面版仍沒顯示時改跑 `.\install-for-codex.ps1 -SkillsDir "$HOME\.agents\skills"` |
+| `/mcp` 沒有 bimteki | 重跑一次 `install-for-codex.ps1 -McpOnly`，或確認 `%USERPROFILE%\.codex\config.toml` 內有 `[mcp_servers.bimteki]`；改完要完全重開 ChatGPT 桌面版。技能包本身不會帶入連接器 |
+| bimteki 顯示啟動失敗／逾時 | Windows Defender 第一次掃描內嵌 Python 會超過 Codex 預設的 10 秒。安裝腳本已把 `startup_timeout_sec` 設為 30；仍失敗就再開一次新對話 |
+| 技能沒出現 | marketplace 裝的：確認外掛程式頁面 BIMTeki 為啟用；zip 裝的：確認 `%USERPROFILE%\.codex\skills\` 底下有 `bimteki-*` 資料夾，仍沒顯示改跑 `.\install-for-codex.ps1 -SkillsDir "$HOME\.agents\skills"` |
 | ChatGPT 模式或網頁版看不到工具 | 正常。本機連接器只有 Codex 模式（桌面版左上角切換）與 Codex CLI 連得到 |
+| 對話一開始就說「本機執行核心無法啟動」 | 對話開在 Codex 不信任的 git 資料夾（例如 Program Files 底下）。換一個普通資料夾開新對話 |
 
 若上述都無法解決，請聯繫 office@arkiteki.com，並附上**檢查腳本的完整輸出**、AI 助理的錯誤訊息與 Archicad 版本。
 
