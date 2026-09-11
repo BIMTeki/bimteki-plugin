@@ -100,9 +100,9 @@ Claude 桌機版有兩個分頁，**BIMTeki 只在 Cowork 分頁能實際操作 
 
 ### ChatGPT 桌面版／Codex
 
-ChatGPT 桌面版（Windows 版由 Microsoft Store 安裝）與 Codex CLI 共用同一套設定，裝一次兩邊都能用；
-Codex 含在所有 ChatGPT 方案內。**BIMTeki 只在桌面版 app 的 Codex／本機代理模式能操作 Archicad**，
-ChatGPT 網頁版連不到本機的連接器（和 Claude 的 Cowork／Chat 分工是同一回事）。
+ChatGPT 桌面版（Windows 版由 Microsoft Store 安裝）左上角可以切換 **ChatGPT** 與 **Codex** 兩種模式，
+**BIMTeki 要切到 Codex 模式使用**；Codex 含在所有 ChatGPT 方案內，桌面版與 Codex CLI 共用同一套設定，裝一次兩邊都能用。
+ChatGPT 模式與網頁版只接受遠端 MCP，連不到本機的連接器（和 Claude 的 Cowork／Chat 分工是同一回事）。
 
 **方式一（建議）：從 marketplace 安裝**
 
@@ -112,8 +112,8 @@ ChatGPT 網頁版連不到本機的連接器（和 Claude 的 Cowork／Chat 分�
 codex plugin marketplace add BIMTeki/bimteki-plugin
 ```
 
-然後在 ChatGPT 桌面版的 **Plugins**（或 Codex 內輸入 `/plugins`）找到 **BIMTeki 建照檢討** 安裝。
-技能包會自動帶上連接器設定（外掛會標示「Desktop only」，因為連接器只能在本機執行）。
+然後在桌面版切到 **Codex** 模式 → 左側 **外掛程式** → **個人** 分頁，會看到「BIMTeki 建照檢討」，按 **＋** 安裝
+（Codex CLI 則是輸入 `/plugins`）。技能包會自動帶上連接器設定（外掛會標示「Desktop only」，因為連接器只能在本機執行）。
 裝完請**完全關閉並重新開啟 ChatGPT 桌面版**。
 
 **方式二：下載安裝包**
@@ -232,7 +232,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$env:ProgramW6432\BIMTeki S
 | `/mcp` 沒有 bimteki | 重跑一次 `install-for-codex.ps1`，或確認 `%USERPROFILE%\.codex\config.toml` 內有 `[mcp_servers.bimteki]`；改完要完全重開 ChatGPT 桌面版 |
 | bimteki 顯示啟動失敗／逾時 | Windows Defender 第一次掃描內嵌 Python 會超過 Codex 預設的 10 秒。安裝腳本已設 30 秒；用 marketplace 裝的請在 `config.toml` 的 `[mcp_servers.bimteki]` 下加一行 `startup_timeout_sec = 30` |
 | 技能沒出現 | 方式一：確認 Plugins 內 BIMTeki 為啟用；方式二：確認 `%USERPROFILE%\.codex\skills\` 底下有 `bimteki-*` 資料夾；ChatGPT 桌面版仍沒顯示時改跑 `.\install-for-codex.ps1 -SkillsDir "$HOME\.agents\skills"` |
-| ChatGPT 網頁版看不到工具 | 正常。本機連接器只有桌面版 app 的 Codex／本機代理模式連得到 |
+| ChatGPT 模式或網頁版看不到工具 | 正常。本機連接器只有 Codex 模式（桌面版左上角切換）與 Codex CLI 連得到 |
 
 若上述都無法解決，請聯繫 office@arkiteki.com，並附上**檢查腳本的完整輸出**、AI 助理的錯誤訊息與 Archicad 版本。
 

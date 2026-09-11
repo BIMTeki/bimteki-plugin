@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "bimteki": {
+      "command": "C:\\Program Files\\BIMTeki Studio\\mcp\\python\\python.exe",
+      "args": ["C:\\Program Files\\BIMTeki Studio\\mcp\\server\\main.py"],
+      "enabled": true,
+      "startup_timeout_sec": 30,
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      }
+    }
+  }
+}
