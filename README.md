@@ -104,19 +104,22 @@ ChatGPT 桌面版（Windows 版由 Microsoft Store 安裝）左上角可以切�
 **BIMTeki 要切到 Codex 模式使用**；Codex 含在所有 ChatGPT 方案內，桌面版與 Codex CLI 共用同一套設定，裝一次兩邊都能用。
 ChatGPT 模式與網頁版只接受遠端 MCP，連不到本機的連接器（和 Claude 的 Cowork／Chat 分工是同一回事）。
 
-分兩步：**連接器設定**用安裝包的腳本寫一次（Codex 目前不會載入第三方技能包內附的連接器設定，2026-09 實測），
-**技能**從 marketplace 安裝（之後可一鍵更新）。
+Codex 目前不會載入第三方技能包內附的連接器設定（2026-09 實測），所以連接器設定由 **BIMTeki Studio 安裝檔**在安裝時
+直接寫進 `%USERPROFILE%\.codex\config.toml`（v0.0.24 起；還沒裝 ChatGPT 也會先寫好，之後裝了就直接生效），
+**技能**則從 marketplace 安裝（之後可一鍵更新）。
 
-**步驟 1：寫入連接器設定（一次就好）**
+**步驟 1：確認連接器設定（通常不用做）**
 
-到 [Releases](https://github.com/BIMTeki/bimteki-plugin/releases) 下載 `bimteki-skills-portable-v○.○.○.zip`，解壓縮後在 PowerShell 執行：
+用 v0.0.24 之後的安裝檔裝 BIMTeki Studio，這步已經自動完成。只有以下情況才需要手動補：安裝檔是舊版、
+安裝時用「以系統管理員身分執行」啟動（設定會寫到管理員帳號）、或之後 `/mcp` 看不到 bimteki。手動補的方法：
+到 [Releases](https://github.com/BIMTeki/bimteki-plugin/releases) 下載 `bimteki-skills-portable-v○.○.○.zip`，解壓縮後在 PowerShell 執行
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\install-for-codex.ps1 -McpOnly
 ```
 
-它會從登錄檔找到 BIMTeki Studio 的安裝位置，把 `[mcp_servers.bimteki]` 寫進 `%USERPROFILE%\.codex\config.toml`
-（其他設定不動、先備份），最後真的啟動連接器驗證一次。BIMTeki Studio 之後升級不用重跑，連接器路徑不會變。
+（或直接執行 `C:\Program Files\BIMTeki Studio\codex-connector.ps1 -McpPath "C:\Program Files\BIMTeki Studio\mcp"`）。
+它會把 `[mcp_servers.bimteki]` 寫進 `config.toml`，其他設定不動、先備份，並實際啟動連接器驗證一次。
 
 **步驟 2：安裝技能**
 
@@ -235,7 +238,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$env:ProgramW6432\BIMTeki S
 
 | 症狀 | 處理方式 |
 |---|---|
-| `/mcp` 沒有 bimteki | 重跑一次 `install-for-codex.ps1 -McpOnly`，或確認 `%USERPROFILE%\.codex\config.toml` 內有 `[mcp_servers.bimteki]`；改完要完全重開 ChatGPT 桌面版。技能包本身不會帶入連接器 |
+| `/mcp` 沒有 bimteki | 確認 `%USERPROFILE%\.codex\config.toml` 內有 `[mcp_servers.bimteki]`；沒有就跑 `install-for-codex.ps1 -McpOnly`（或安裝目錄的 `codex-connector.ps1`）補上，改完要完全重開 ChatGPT 桌面版。技能包本身不會帶入連接器 |
 | bimteki 顯示啟動失敗／逾時 | Windows Defender 第一次掃描內嵌 Python 會超過 Codex 預設的 10 秒。安裝腳本已把 `startup_timeout_sec` 設為 30；仍失敗就再開一次新對話 |
 | 技能沒出現 | marketplace 裝的：確認外掛程式頁面 BIMTeki 為啟用；zip 裝的：確認 `%USERPROFILE%\.codex\skills\` 底下有 `bimteki-*` 資料夾，仍沒顯示改跑 `.\install-for-codex.ps1 -SkillsDir "$HOME\.agents\skills"` |
 | ChatGPT 模式或網頁版看不到工具 | 正常。本機連接器只有 Codex 模式（桌面版左上角切換）與 Codex CLI 連得到 |

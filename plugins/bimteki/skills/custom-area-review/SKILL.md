@@ -1,6 +1,6 @@
 ---
 name: custom-area-review
-description: 在 BIMTeki 專案中依使用者提供的「檢討方式」檢討自訂面積項目（配合外掛的「自訂面積項目檢討」功能，主選單與面板同名；程式內部舊稱「自訂區域檢討」；適用地方特別法規等建照固定檢討表未涵蓋的面積比例檢討，例：台中宜居建築垂直綠化）。當使用者說「做自訂面積項目檢討 / 做自訂區域檢討 / 檢討自訂面積 / 面積比例檢討 / 特定檢討項目 / 依這個檢討方式幫我檢討 / 宜居建築檢討 / custom area review」，或提供一段自訂的面積比例檢討需求並表示已（或可以）在 Archicad 選好區域／填充時使用本 skill，即使沒有明講「skill」二字。需求三件事：檢討方式（必）、在 Archicad 選取好區域或填充（必）、呈現格式（選）；本 skill 會建立**一個**總檢討項目，把各組面積以「散裝區域」或「區域組合」掛在該項目底下，取得面積 autotext token（組合出一顆合計 token，另有計算式 token）；檢討需要的**非面積參數**（規定比率、檢討基準、實設數量、係數等）則寫成專案管理面板「使用者自訂義」的自訂義參數（`set_project_custom_params`），以其 autotext token 入表、不寫死；最後把比例檢討組成表格樣板放到圖面。不經 `table` hub，直接呼叫本 skill。建蔽率、容積、屋突等建照固定檢討表另有專屬 skill，不要用本 skill 代替；土管的綠化面積檢討（綠化率、喬木株數）沒有專屬 skill，也用本 skill 的一般流程建，項目／組合／參數沿用專案既有的固定命名（見 `project-info-fill/references/field-routing.md` C 節）。
+description: 在 BIMTeki 專案中依使用者提供的「檢討方式」檢討自訂面積項目（配合外掛的「自訂面積項目檢討」功能，主選單與面板同名；程式內部舊稱「自訂區域檢討」；適用地方特別法規等建照固定檢討表未涵蓋的面積比例檢討，例：台中宜居建築垂直綠化）。當使用者說「做自訂面積項目檢討 / 做自訂區域檢討 / 檢討自訂面積 / 面積比例檢討 / 特定檢討項目 / 依這個檢討方式幫我檢討 / 宜居建築檢討 / custom area review」，或提供一段自訂的面積比例檢討需求並表示已（或可以）在 Archicad 選好區域／填充時使用本 skill，即使沒有明講「skill」二字。需求三件事：檢討方式（必）、在 Archicad 選取好區域或填充（必）、呈現格式（選）；本 skill 會建立**一個**總檢討項目，把各組面積以「散裝區域」或「區域組合」掛在該項目底下，取得面積與名稱 autotext token（組合出合計與名稱 token）；檢討需要的**非面積參數**（規定比率、檢討基準、實設數量、係數等）則寫成專案管理面板「使用者自訂義」的自訂義參數（`set_project_custom_params`），以其 autotext token 入表、不寫死；最後把比例檢討組成表格樣板放到圖面。不經 `table` hub，直接呼叫本 skill。建蔽率、容積、屋突等建照固定檢討表另有專屬 skill，不要用本 skill 代替；土管的綠化面積檢討（綠化率、喬木株數）沒有專屬 skill，也用本 skill 的一般流程建，項目／組合／參數沿用專案既有的固定命名（見 `project-info-fill/references/field-routing.md` C 節）。
 ---
 
 # BIMTeki 自訂面積項目檢討
@@ -8,7 +8,7 @@ description: 在 BIMTeki 專案中依使用者提供的「檢討方式」檢討�
 地方特別法規（例：台中宜居建築的垂直綠化比、各縣市自治條例的特殊面積比）常要求「某類面積 ÷ 另一類面積 ≧ 規定值」這類**固定檢討表沒有涵蓋**的檢討。本 skill 用外掛的「自訂面積項目檢討」功能完成整條流程：
 
 1. 依使用者的**檢討方式**建立**一個**總檢討項目（**不是**一組面積一個項目，見第一步）。
-2. 各組面積掛在該項目底下：單顆＝**散裝區域**；多顆構成同一個量＝**區域組合**（一顆合計 token＋兩顆計算式 token，成員不出）。
+2. 各組面積掛在該項目底下：單顆＝**散裝區域**；多顆構成同一個量＝**區域組合**（出合計與名稱 token，成員不出）。
 3. 檢討方式裡**不是面積的量**（規定比率、檢討基準、實設數量、係數…）寫成**自訂義參數**（專案管理面板 →「使用者自訂義」），一個檢討一個分類（見第二步之二）。
 4. 區域／組合自動成為**面積自動文字**（token 綁「項目＋區域／組合」GUID，改名不影響）；自訂義參數自動成為 `CustomParam.{項目名}` 自動文字（綁項目名稱）。
 5. 以 token（必要時加 `{=...}` 公式；符合／不符合的結論用 `{?...}` 判斷式）組出比例檢討，建成表格樣板——面積與規定值都是 token，**表格裡不寫死任何數字**。
@@ -40,12 +40,12 @@ description: 在 BIMTeki 專案中依使用者提供的「檢討方式」檢討�
   | 該組的組成 | 掛法 | token |
   |---|---|---|
   | 只有 1 顆區域／填充 | **散裝區域**（`add_zones`／`import_selected`） | 自己一顆 |
-  | **多顆**區域／填充合起來算一個量 | **區域組合**（`create_group`） | 整組一顆**合計**＋兩顆**計算式**（`a+b+c = sum m²`／含成員名稱），成員不出 token |
+  | **多顆**區域／填充合起來算一個量 | **區域組合**（`create_group`） | 整組一顆**合計** token＋一顆**名稱** token，成員不出 token |
 
   多顆時**優先用區域組合**，不要改成在表格裡寫 `{=a+b+c}`：合計由外掛算，日後增減成員不必改表。
 - 區域／組合名稱就是 autotext 的欄位名，所以**請使用者在 Archicad 就把填充的 ID／名稱標好**（例「GA：綠化面積」）。名稱標好時可用 `add_zones`／`create_group` 帶 GUID 一次分完，不必逐組要使用者重新選取（見第二步）。
 - 先呼叫 `bimteki:get_project_custom_area_review` 看現況（read-modify-write）：同名項目已存在時**不要重建**——問使用者是沿用該項目（可續匯入或先 `clear_zones`）還是換名稱。
-- **面積來源**：預設 `original`（區域面積＝元素測量面積）。只有使用者明確說要用「面積分割」工具寫入的分割面積時才 `set_area_source` 為 `overwrite`；此設定影響**該項目所有區域與組合** token 的取值（沒經過面積分割的填充 `splitArea` 是 0，誤設成 `overwrite` 會全部顯示 0）。
+- **面積來源**：預設 `original`（區域面積＝元素測量面積）。只有使用者明確說要用「面積分割」工具寫入的分割面積時才 `set_area_source` 為 `overwrite`；此設定影響**該項目所有區域與組合** token 的取值（沒經過面積分割的填充 `splitArea` 是 0，誤設成 `overwrite` 會全部顯示 0）。用「總體計算式」總量分割的區域，`splitArea` 是該批的**總量**（同批成員值相同、`splitMode` 為 2）：同批多顆散裝各掛會重複計，請掛成一個組合（組合會依批次只計一次）。
 
 ## 第二步：把區域掛進項目
 
@@ -69,7 +69,7 @@ description: 在 BIMTeki 專案中依使用者提供的「檢討方式」檢討�
 
 - 正解：**確定要成組的填充直接 `create_group`，不要先 `add_zones`**。
 - 已經誤放的：`remove_zones` 把散裝那幾顆移掉即可（組合不受影響）。
-- 自檢：`get_project_custom_area_review` 的 `zoneCount` **含組合成員**，若「散裝顆數＋所有組合成員數」跟它對不上，或 `evaluate_autotext_values` 的欄位數多於「散裝顆數＋組合數」，就是有重複。
+- 自檢：`get_project_custom_area_review` 的 `zoneCount` **含組合成員**，若「散裝顆數＋所有組合成員數」跟它對不上，或 `evaluate_autotext_values` 的欄位數多於「（散裝顆數＋組合數）×2（面積＋名稱）」，就是有重複。
 
 ### 兩種掛法
 
@@ -112,15 +112,15 @@ bimteki:set_project_custom_area_review(actions=[
 
 ## 第三步：取 token
 
-**面積 token 不經 catalog**：`get_project_custom_area_review` 回傳的 `zones[].token`（散裝區域）與 `groups[].token`（區域組合合計）就是面積自動文字，**直接使用**，不需要再掃 `get_project_autotext_catalog` 比對顯示名（同名區域在 catalog 裡分不出來，這裡以 GUID 分）。**參數 token 走 catalog**：`get_project_autotext_catalog(category="customParam")` 以 `display`＝項目名稱比對（見第二步之二）。
+**面積 token 不經 catalog**：`get_project_custom_area_review` 回傳的 `zones[].token`（散裝區域）與 `groups[].token`（區域組合合計）就是面積自動文字，散裝區域與組合另有 `zones[].nameToken`／`groups[].nameToken`（區域名稱／填充 ID／組合名稱的**文字**自動文字，改名自動更新，放表格的項目名稱欄用；成員沒有），**直接使用**，不需要再掃 `get_project_autotext_catalog` 比對顯示名（同名區域在 catalog 裡分不出來，這裡以 GUID 分）。**參數 token 走 catalog**：`get_project_autotext_catalog(category="customParam")` 以 `display`＝項目名稱比對（見第二步之二）。
 
-- **組合成員沒有 token**（`groups[].zones[]` 沒有 `token` 欄）。組合本身有三顆：`token`（合計）、`formulaToken`（計算式 `a+b+c = sum m²`）、`formulaWithZoneNameToken`（每項後綴成員名稱）——表上要列出組成時直接用計算式 token，不要自己逐顆拼；公式與判斷式裡一律用合計 `token`。
+- **組合成員沒有 token**（`groups[].zones[]` 沒有 `token` 欄），組合本身有合計 `token` 與名稱 `nameToken`，**沒有計算式 token**（舊版的 `formulaToken`／`formulaWithZoneNameToken` 已移除，回傳裡看到它們代表外掛是舊版，忽略即可）。表上要逐顆列出成員面積時，改把那些區域掛成散裝各取 token（組合只用在「多顆算一個量」）；公式與判斷式裡一律用合計 `token`。
 - **token 綁「項目＋區域／組合」GUID**：項目、區域、組合改名都不影響已放置的 token；但**同一顆填充掛到不同項目底下會拿到不同的 token**，換掛法（散裝↔組合）也會換 token。
   > 所以**項目結構要先定案再建表**。先建表後改結構，等於表格引用了失效 token，圖面上那些格子會變空字串。非改不可時的順序是：**新結構建好 → 取新 token → 改表 → 最後才刪舊項目／舊掛法**。
 - token 依項目的 `areaSource` 求值（`zoneArea` 或 `splitArea`；組合為合計），切換面積來源 token 不變。
 - token 是專案特定的，**絕不跨案硬編**；每次建表前重新取。
 - 要先看數值可用 `bimteki:evaluate_autotext_values(category="customAreaReview,customParam")`（面積與參數一次取；判 0 用容差 `abs(value) < 0.005`）。**不要用 `evaluate_story_autotext_values`**——它只涵蓋 storyArea，評本分類會回空且不報錯。
-- `customAreaReview` 分類的求值欄位數應該剛好等於「散裝顆數＋組合數」，多出來就是有填充重複掛在散裝與組合（見第二步的坑）。
+- `customAreaReview` 分類的求值欄位數應該剛好等於「（散裝顆數＋組合數）×2（面積＋名稱）」，多出來就是有填充重複掛在散裝與組合（見第二步的坑）。
 
 ## 第四步：產表
 
@@ -131,10 +131,10 @@ bimteki:set_project_custom_area_review(actions=[
 ```
 row 0   ◯◯檢討                                  （標題，跨兩欄合併、textbold、textsize 1）
 row 1   規定               GA≧(A-SGA)×{P率} \n SA≧GA×{P率}   （檢討方式原文；規定值處放參數 token，不寫死）
-row 2   GA：綠化面積        {token GA} m²          （單顆＝散裝 token）
+row 2   {nameToken GA}      {token GA} m²          （單顆＝散裝 token；左欄放 nameToken，區域改名表格自動跟著）
 row 3   A：垂直綠化設施面積  {token A} m²
 row 4   SGA：結構必需之環樑面積 {token SGA} m²
-row 5   SA：降版面積        {token SA組合} m²       （多顆＝組合合計 token，不要寫 {=a+b+c}）
+row 5   {nameToken SA組合}  {token SA組合} m²       （多顆＝組合合計 token，不要寫 {=a+b+c}；左欄同樣放組合 nameToken）
 row 6   垂直綠化規定比率     {P率}                  （自訂義參數 token，內容「50%」；不要寫死「50%」）
 row 7   檢討                                     （區塊標題列，跨兩欄合併、textbold）
 row 8   (1)GA≧(A-SGA)×{P率}  {GA} m² ≧ ({A}-{SGA})×{P率} = {=roundn(({A}-{SGA})*{P率}, 2)} m² {?{GA} >= ({A}-{SGA})*{P率}|符合|不符合}
