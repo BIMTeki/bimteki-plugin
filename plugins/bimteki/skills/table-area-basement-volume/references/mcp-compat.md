@@ -56,6 +56,7 @@ skills 更新是**一鍵**、其他三條要**重跑安裝檔**，所以「skill
 | 儲存格**判斷式** `{?條件\|成立時\|不成立時}`（符合／不符合等結論由外掛依數值自動判定） | **外掛 ≥ 0.0.23**（MCP 版本不限，字串原樣轉送給外掛） | 舊版外掛把 `{?…}` 當純文字原樣顯示——退回「結論不寫死、只寫左式數值」的做法，並跟使用者說明這是外掛版本限制 |
 | 綠化面積檢討表（以 `custom-area-review` 建）新流程：綠化面積來自區域組合的合計 token（`get_project_custom_area_review` 的 `groups[].token`）；舊的綠化檢討工具、`get/set_project_green_info` 與 autotext `green` 分類已移除 | **外掛 ≥ 0.0.23、MCP ≥ 0.13.0**（另需自訂面積項目檢討模組授權） | 工具清單裡還有 `get_project_green_info` ＝ 外掛太舊——停手請使用者重跑安裝檔並完全重開 Claude，**不要**退回舊的綠化工具流程（新版 skill 已沒有那條路） |
 | 區域組合**不再出計算式 token**：`groups[].formulaToken`／`formulaWithZoneNameToken` 已移除；總量分割（總體計算式）的區域 `splitArea` 改為該批總量並附 `splitMode`／`splitBatchGuid`；散裝區域與組合另有 `zones[].nameToken`／`groups[].nameToken`（名稱文字 token） | **外掛 ≥ 0.0.25**（連接器隨安裝檔一起更新，MCP 版號未變仍為 0.13.0，以外掛版號判斷） | 回傳裡還有 `formulaToken` ＝ 舊版——合計 `token` 新舊版都有，照 skill 用合計 token 即可、不必停手；只是舊版對總量分割區域的 `splitArea` 是各塊面積而非總量，散裝匯入同批多顆時要留意 |
+| 節能檢討（`green-energy`）的**連動模式**：每樘外遮陽紀錄（`get_project_opening_info`／`set_project_opening_shading`）、自動文字分類 `openingShading`（ΣAgi／Aeq 合計、Openings／D-1／Ki 陣列） | **MCP ≥ 0.14.0、外掛 ≥ 1.0.3**（另需「綠建築檢討」授權；發布前＝所內／開發者，工具回 `feature_not_licensed` 就是沒授權） | 工具清單裡沒有這兩個工具＝版本太舊——`build_tables.py --static` 退回常數表（舊流程照常可用），跟使用者說明這是版本限制而非設計 |
 
 > 注意 MCP 工具的**參數本來就是自我描述的**：舊版 MCP 不會把 `merges` 放進 schema，
 > 所以你不會「送了一個不存在的參數」。真正的風險是——skill 叫你帶 `merges`、

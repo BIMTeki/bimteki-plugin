@@ -44,7 +44,11 @@ BIMTeki Studio 的 AI 技能包，可在 **Claude**（Claude Code／Cowork）或
 安裝時請確認 **「AI 助理連接器 (BIMTeki MCP)」**（舊版安裝檔叫「Claude AI 連接器」）這個項目是勾選的（預設就會勾）。它會把
 連接器裝到 `C:\Program Files\BIMTeki Studio\mcp\`，**連 Python 都自帶**，你不需要另外安裝任何東西。
 
-> 已經裝過舊版 BIMTeki Studio 的人，請重新執行一次最新版安裝檔，才會有這個連接器。
+安裝檔同時會把連接器的設定寫進你電腦上的 AI 助理（v1.0.5 起）：Claude 桌機版、Claude Code（若已安裝 `claude` 指令）與
+ChatGPT 桌面版／Codex。還沒裝這些 App 也會先寫好，之後裝了就直接生效。**安裝檔請用一般方式執行，不要「以系統管理員身分執行」**，
+否則設定會寫到管理員帳號底下，你平常登入的帳號會找不到。
+
+> 已經裝過舊版 BIMTeki Studio 的人，請重新執行一次最新版安裝檔，才會有這個連接器與 AI 助理設定。
 
 ---
 
@@ -82,8 +86,9 @@ https://github.com/BIMTeki/bimteki-plugin
 
 安裝完成後，在對話框輸入 `/` 或按 `+`，就會看到所有 BIMTeki 技能。
 
-> **不需要設定 MCP。** 技能包裡已經帶了連接器設定，會自動找到步驟一裝好的 BIMTeki MCP，
-> 你不必執行 `claude mcp add`，也不必安裝任何擴充功能。
+> **不需要自己設定 MCP。** 連接器設定已由步驟一的安裝檔寫進 Claude（桌機版的 `claude_desktop_config.json`，
+> 以及 Claude Code 的使用者層級設定），你不必執行 `claude mcp add`，也不必安裝任何擴充功能。
+> 技能包（4.3 起）本身不再帶連接器設定；若是用舊版安裝檔（v1.0.4 以前）裝的，請重跑最新版安裝檔。
 
 ### ⚠️ 桌機版請務必在 Cowork 分頁使用，不是 Chat 分頁
 
@@ -104,9 +109,8 @@ ChatGPT 桌面版（Windows 版由 Microsoft Store 安裝）左上角可以切�
 **BIMTeki 要切到 Codex 模式使用**；Codex 含在所有 ChatGPT 方案內，桌面版與 Codex CLI 共用同一套設定，裝一次兩邊都能用。
 ChatGPT 模式與網頁版只接受遠端 MCP，連不到本機的連接器（和 Claude 的 Cowork／Chat 分工是同一回事）。
 
-Codex 目前不會載入第三方技能包內附的連接器設定（2026-09 實測），所以連接器設定由 **BIMTeki Studio 安裝檔**在安裝時
-直接寫進 `%USERPROFILE%\.codex\config.toml`（v0.0.24 起；還沒裝 ChatGPT 也會先寫好，之後裝了就直接生效），
-**技能**則從 marketplace 安裝（之後可一鍵更新）。
+連接器設定由 **BIMTeki Studio 安裝檔**在安裝時直接寫進 `%USERPROFILE%\.codex\config.toml`（v0.0.24 起；還沒裝 ChatGPT
+也會先寫好，之後裝了就直接生效），**技能**則從 marketplace 安裝（之後可一鍵更新）。技能包本身不帶連接器設定。
 
 **步驟 1：確認連接器設定（通常不用做）**
 
@@ -217,7 +221,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$env:ProgramW6432\BIMTeki S
 | initialize 沒有回應 | 多半是防毒或公司資安軟體擋掉了連接器。請 IT 把 `BIMTeki Studio\mcp\python\python.exe` 加入白名單 |
 | stdout 被汙染 | 請把完整輸出寄給我們 |
 
-安裝時若看到「安裝位置不是預設」的提示，代表安裝到了非標準位置，marketplace 技能包（用固定路徑）將無法自動連上；請用預設位置重裝，或改用安裝包的 `install-for-codex.ps1`（它會讀登錄檔找到實際位置）。
+檢查腳本的第 4 段會確認 Claude 桌機版、Claude Code、ChatGPT／Codex 的設定裡有沒有安裝檔寫入的 bimteki 連接器。
+顯示 [失敗] 時，在 PowerShell 執行安裝目錄的連接器腳本補上（改完要完全重開對應的 App）：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:ProgramW6432\BIMTeki Studio\claude-connector.ps1" -McpPath "$env:ProgramW6432\BIMTeki Studio\mcp"
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:ProgramW6432\BIMTeki Studio\codex-connector.ps1"  -McpPath "$env:ProgramW6432\BIMTeki Studio\mcp"
+```
+
+安裝時若看到「安裝位置不是預設」的提示，代表安裝到了非標準位置。v1.0.5 以後的安裝檔會把實際位置寫進設定，不受影響；
+4.2.x 以前的舊技能包（自帶固定路徑）才會連不上，更新技能包即可。
 
 ### Claude 端
 
@@ -228,7 +241,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$env:ProgramW6432\BIMTeki S
 | 技能沒出現在清單裡 | 執行 `/reload-plugins`；仍無效就重開 Claude |
 | `/plugin` 指令不存在 | Claude Code 版本太舊，請更新到最新版 |
 | 檢查腳本全過，但 Claude 仍看不到工具 | 先確認是 Cowork 分頁；再確認技能包為啟用狀態（`/plugin` → Installed），必要時 `/reload-plugins` |
-| `/plugin` 的 Errors 分頁顯示連接器啟動失敗 | 跑上面的檢查腳本，依結果處理 |
+| 桌機版或 Claude Code 看不到 bimteki 連接器 | 安裝檔沒寫到設定（舊版安裝檔，或用「以系統管理員身分執行」裝的）。跑上面的檢查腳本，依第 4 段的結果執行 `claude-connector.ps1` 補上，然後完全重開 Claude |
+| 工具清單出現兩份 bimteki，或安裝完成頁提醒「偵測到舊版技能包」 | 4.2 以前的技能包自帶連接器設定，與安裝檔寫的設定重複。把技能包更新到 4.3 以上即可（Claude Code 自己裝的安裝檔會自動更新；桌機版請先完全重開 Claude 再到 Plugins 頁面按更新）。Claude 回話時若提到同一件事，也是這個原因 |
+| 連接器顯示啟動失敗 | 跑上面的檢查腳本，依結果處理 |
 | Claude 說「無法連線到 Archicad」 | 連接器正常但 Archicad 沒開。確認 Archicad 開著、專案已開啟、BIMTeki 外掛已載入 |
 | 表格產生了但數值是空白 | 自動文字要放置到圖紙（Layout）上才會計算出實際值 |
 | Claude 說「你的 MCP 版本太舊」，或表格少了合併儲存格／框線 | 技能包更新了、連接器沒有。**重跑最新版 BIMTeki Studio 安裝檔**，裝完完全關掉再重開 Claude |

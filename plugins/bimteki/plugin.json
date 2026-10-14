@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "bimteki",
-  "version": "4.2.1",
+  "version": "4.3.0",
   "description": "在 Archicad 中自動產生建照圖說的各式檢討表、回填專案資訊。需搭配 BIMTeki Studio 外掛與 BIMTeki MCP 使用（Windows）。",
   "author": {
     "name": "BIMTeki",
