@@ -1,6 +1,6 @@
 # 檢討表 spoke 共用規範（前置檢查・autotext 原則・儲存格格式・建表流程）
 
-**這份是各 `table-*` spoke（經 `table-area`／`table-code` 兩個分類 hub 路由，以及同樣建表的 `custom-area-review`）共用行為的單一事實來源。** 各 spoke 的 SKILL.md 只寫「這張表特有」的內容
+**這份是各手建檢討表 skill（經 `table-code` hub 路由的 `table-code-*` spoke、同樣建表的 `custom-area-review`，以及 `table-area` 的例外處理）共用行為的單一事實來源。** 各 spoke 的 SKILL.md 只寫「這張表特有」的內容
 （列組成、案型分支、token 對照、預設樣板名、欄寬），共通的流程與眉角一律指回這裡。
 需求版本另見 `mcp-compat.md`；autotext 分類速查另見 `table-catalog.md`。
 
@@ -27,7 +27,7 @@
    - `has_unsaved_changes`：true → 先告訴使用者「建表會存檔，你目前未存的變更會一併落地」，讓他決定，不要默默存下去。
    - 回報未開啟 BIMTeki 專案 → 詢問專案路徑 → `bimteki:open_bimteki_project` → 重試。
 3. **`bimteki:get_project_core_snapshot`** 讀案型與本案事實（各表要看哪些欄位見各 spoke）。
-4. **面積類六張表（`table-area-*`）：確認區域已繪製並匯入 BIMTeki**——不經 hub 直接呼叫 spoke 時也要做。
+4. **面積類六張表（`table-area` 一鍵生成）：確認區域已繪製並匯入 BIMTeki**——由外掛工具 `generate_area_review_tables` 自行檢查並在 `skipped` 回報略過原因；skill 不代畫區域。
    `bimteki:get_bimteki_zone_map`（唯讀）看 `counts`：面積總表、各層容積、地下層容積、屋突面積看 `void`（容積區域），
    建蔽率、基地概要看 `arch`（建蔽區域）；容積類另用 `bimteki:get_project_stories` 確認 `blocks[].stories` 有該建的樓層
    （`floors` 是 Archicad 骨架，不算）。要用的那一類是 0 就**停手**，告訴使用者「請先在 Archicad 繪製○○區域並匯入 BIMTeki」再回來：

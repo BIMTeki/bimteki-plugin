@@ -11,14 +11,8 @@ BIMTeki Studio 的 AI 技能包，可在 **Claude**（Claude Code／Cowork）或
 | 技能 | 用途 |
 |---|---|
 | `table` | **檢討表清單**。`/bimteki:table 清單` 列出本案可做的表，並指到下面兩個分類入口 |
-| `table-area` | **面積與容積檢討表入口**。`/bimteki:table-area <關鍵字>` 直接做指定的表（area 面積總表／volume 各層容積／basement 地下層／rooftop 屋突／coverage 建蔽率／site 基地概要／green 綠化） |
+| `table-area` | **面積與容積檢討表入口**。`/bimteki:table-area <關鍵字>` 由外掛一鍵生成六張表（all 全部／area 面積總表／volume 各層容積／basement 地下層／rooftop 屋突／coverage 建蔽率／site 基地概要；外掛需 v1.1.0 以上），重做會原地更新同一份樣板 |
 | `table-code` | **法規條文檢討表入口**。`/bimteki:table-code <關鍵字>` 直接做指定的表（permit 建照審查／landuse 土管／a11y 無障礙） |
-| `table-area-summary` | 各層樓地板面積總表 |
-| `table-area-per-floor-volume` | 各層容積檢討表（每個地上層一張） |
-| `table-area-basement-volume` | 地下層容積檢討表 |
-| `table-area-rooftop` | 屋突面積檢討表 |
-| `table-area-site-overview` | 基地概要表 |
-| `table-area-coverage` | 建蔽率檢討表（建築面積檢討） |
 | `custom-area-review` | 自訂面積項目檢討（依你提供的檢討方式做面積比例檢討，例：宜居建築垂直綠化；需「自訂面積項目檢討」模組授權）。直接跟 Claude 說「做自訂面積項目檢討」即可，不經 `table` 入口 |
 | `table-code-permit` | 建造執照規定項目審查表（第 18~27 項） |
 | `table-code-landuse` | 依土管文件生成土管檢討表 |
@@ -141,7 +135,7 @@ codex plugin marketplace add BIMTeki/bimteki-plugin
 
 **驗證**：開新對話時任選一個資料夾（建議建一個空的專用資料夾，例如 `文件\BIMTeki工作`；BIMTeki 不讀那個資料夾的內容）。
 輸入 `/mcp` 應看到 `bimteki`；`/skills` 應看到 BIMTeki 的技能。之後直接用中文交代即可；
-要指定技能可打 `$bimteki:table-area-summary`（marketplace 裝的）或 `$bimteki-table-area-summary`（zip 裝的）。
+要指定技能可打 `$bimteki:table-area`（marketplace 裝的）或 `$bimteki-table-area`（zip 裝的）。
 技能包頁面不會顯示連接器，以 `/mcp` 為準。
 
 ### Google Antigravity（實驗性）
@@ -184,10 +178,10 @@ Gemini 網頁版／手機 app 目前無法連接本機連接器。
 如果想直接指定某個技能，也可以打斜線：
 
 ```
-/bimteki:table-area-summary
+/bimteki:table-area 面積總表
 ```
 
-（ChatGPT 桌面版／Codex 則輸入 `$table-area-summary`，或在 ChatGPT 對話框用 `@` 選技能。）
+（ChatGPT 桌面版／Codex 則輸入 `$table-area`，或在 ChatGPT 對話框用 `@` 選技能。）
 
 ---
 
