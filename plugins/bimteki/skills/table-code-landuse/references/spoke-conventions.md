@@ -168,3 +168,16 @@
 - **刪除舊樣板**（`manage_project_table_templates` 的 delete）必須先取得使用者明確同意；已放置到圖面者刪樣板後會轉為靜態表格，圖面元素需人工移除。
 - **寫回專案資訊**（任何 `set_*`）一律先問過使用者；案件已定案時會被拒絕，直接留佔位符。
 - **數值不對不要在表格裡硬改**：表格只是綁定，數值來自專案資料與區域；該改的是專案設定或容積區域，改完表格自動跟著更新。
+
+## 8. 已放置表格的維護（表格管理器的 MCP 對應）
+
+放到圖面之後的表格由「表格管理器」追蹤；以下五支工具是它的 MCP 對應（需 **MCP ≥ 0.16.0、外掛 ≥ 1.1.1**，版本判斷見 `mcp-compat.md`；清單裡沒有就請使用者在 Archicad 的表格管理器面板操作，不要硬湊）。
+
+- **放置後先核對**：`bimteki:get_placed_project_tables`（唯讀）列出每張已放置表的樣板名、表現法、屬性樓層、居室、狀態（`updated`／`needsUpdate`／`static`／`missing`）、所在佈圖與 `pos_mm`／`boundingBox_mm`；可帶 `layout_guid` 只看一張佈圖。回傳附 `storyGuidList`／`roomGuidList`／`styleTemplateList`，改綁直接從這裡挑 GUID。
+  `storyGuid`／`roomGuid` 只有樓層／居室相依的表才有；不是該類表就沒有這個鍵（不是 null）。
+- **綁錯樓層、居室或表現法**：`bimteki:modify_placed_project_tables(tables=[{tableGuid, storyGuid?, roomGuid?, styleTemplateGuid?}])`，等同面板清單上的下拉選單，改完立即重算該表自動文字。樣板不是樓層／居室相依卻帶了對應 GUID，該筆回 error、其餘照做；團隊協作下被他人保留的表回 `skipped` 並列在 `lockedTables`（含持有者），轉告使用者，不要重送硬闖。**不要為了換樓層刪掉重放。**
+  移動位置、改尺寸仍走 `modify_layout_elements`。
+- **更新自動文字**：`bimteki:manage_placed_project_tables(action="updateAutotext")`，等同面板「更新自動文字」；回傳更新前後的待更新張數。團隊協作下有待更新表被他人保留時整批不動、回 `lockedTables`。
+- **找不到物件的紀錄**：`action="rescan"` 只重新標記；`action="removeMissingRecords"` 會移除所有 `missing`／`notExist` 紀錄（只動 BIMTeki 紀錄、不刪 Archicad 物件，但不可復原）——**先帶 `dry_run=true` 把清單給使用者確認，取得同意再正式移除**。
+- **帶使用者去看那張表**：`action="locate"` 加 `table_guid`，Archicad 會切到該表所在的佈圖或平面並選取縮放。這會改變使用者目前的視窗，只在使用者要求時用。
+- **表現法樣板**（框線、字型、字高、列高倍率）：`bimteki:get_table_style_templates` 讀清單與各欄位現值；`bimteki:manage_table_style_templates` 做 `create`／`update`／`duplicate`／`delete`。`update` 改外觀欄位會同步改寫所有引用它的已放置表格（只改名不會）；`delete` 會把引用表格改回內建預設表現法並重套，內建預設不可刪。`delete` 與整批改寫都要先取得使用者同意。放表時要套某個表現法，把它的 GUID 帶進 `place_project_table_on_layout` 的 `style_template_guid`。

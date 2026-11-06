@@ -26,6 +26,7 @@ description: BIMTeki「面積與容積檢討表」入口：以外掛的一鍵生
    - `notes`：版面判斷與提醒（例如一般多棟移除樓高欄、騎樓改綁專案層級、多分區建蔽率請目視確認）。
    - `savedToFile == false`：提醒使用者另存專案。
 6. **放置**：樣板都在專案資料夾「容積檢討表」底下。使用者要放到佈圖時用 `bimteki:place_project_table_on_layout`（各層容積與屋突都是每層各一張、各格已綁該層，不必帶 `storyGuid`），或請使用者在表格管理器放置。
+   放完可用 `bimteki:get_placed_project_tables` 讀回核對每張表落在哪張佈圖、綁哪一層；綁錯用 `bimteki:modify_placed_project_tables` 改綁，不必刪掉重放（見 `references/spoke-conventions.md` 第 8 節）。
 
 ## 參數對照（呼叫本 skill 時帶的關鍵字 → `tables`）
 
