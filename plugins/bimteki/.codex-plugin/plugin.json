@@ -1,6 +1,6 @@
 {
   "name": "bimteki",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "在 Archicad 中自動產生建照圖說的各式檢討表、回填專案資訊。需搭配 BIMTeki Studio 外掛與 BIMTeki MCP 使用（Windows）。",
   "author": {
     "name": "BIMTeki",
